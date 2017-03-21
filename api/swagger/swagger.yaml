@@ -1,60 +1,374 @@
 swagger: "2.0"
 info:
-  version: "0.0.1"
-  title: Hello World App
-# during dev, should point to your local machine
-host: localhost:10010
-# basePath prefixes all resource paths 
-basePath: /
-# 
+  version: "0.1"
+  title: Stratego
+  contact:
+    name: Paul Wagener
+    email: p.wagener@avans.nl
+  description: |
+      Met deze API is het mogelijk om Stratego te spelen tegen je medestudenten, of tegen de computer. Je kan meerdere potjes tegelijk spelen, elk tegen een andere tegenstander.
+      
+      ## Spelregels
+      Bij stratego speel je op een speelbord van 10x10 vakjes. 
+      Aan het begin van het spel staan er twee legers, elk bestaand uit 40 stukken in verschillende rangen, tegenover elkaar. De bedoeling is dat de vlag van de tegenstander wordt veroverd.
+      
+      Aan het begin van het spel moeten alle 40 stukken in de onderste vier rijen worden geplaatst. Je mag er van uitgaan dat het bord altijd zo gedraaid is dat jouw stukken beginnen in de laagste vier rijen en die van de tegenstander in de hoogste vier rijen. De volgende stukken moeten geplaatst worden:
+      
+      Code  | Naam       | Aantal | Bewegen
+      ------|------------|--------|----------
+      B     | Bom        | 6      | Mag niet bewegen
+      10    | Maarschalk | 1      | 
+      9     | Generaal   | 1      | 
+      8     | Kolonel    | 2      | 
+      7     | Majoor     | 3      | 
+      6     | Kapitein   | 4      | 
+      5     | Luitenant  | 4      | 
+      4     | Sergeant   | 4      | 
+      3     | Mineur     | 5      | 
+      2     | Verkenner  | 8      | Mag horizontaal en verticaal zo ver mogelijk bewegen (maar niet over andere stukken heen)
+      1     | Spion      | 1      | 
+      F     | Vlag       | 1      | Mag niet bewegen
+
+      Spelers zijn om en om aan de beurt. Als de speler aan de beurt mag hij één van zijn stukken één vakje horizontaal of verticaal verplaatsen. Zoals hierboven te zien is geldt voor sommige stukken een uitzondering.
+      
+      In het midden van het bord zijn 8 vakjes water, het is voor geen enkel stuk mogelijk om hier overheen te bewegen.
+      
+      Als je op het vakje van een tegenstander eindigt moeten deze twee stukken met elkaar in gevecht. Het stuk met de hoogste waarde wint, het andere stuk moet van het bord worden gehaald. Op deze regel zijn een paar uitzonderingen:
+      
+      * Als de vlag gepakt wordt is het spel afgelopen, de winnaar is de speler die de vlag heeft gepakt.
+      * Als de spion de maarschalk pakt wint de spion (let op: als de maarschalk de spion pakt wint de maarschalk!)
+      * Als de bom wordt gepakt wint de bom, met uitzondering van de mineur die het wint van de bom.
+      
+      Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden op het bord aangegeven als 'O' (van 'opponent'). Als je ze probeert te pakken krijg je wel even te zien welk type stuk je probeert te pakken om te bepalen welk stuk geslagen wordt.
+      
+      Alle spelregels zijn al geimplementeerd in de server, je hoeft voor deze opdracht dus alleen maar de UI te maken die het mogelijk maakt om in de browser een potje te spelen. Je moet in je code wel checken op ongeldige zetten, val de server dus niet lastig met zetten die niet uit te voeren zijn!
+      
+
+      ## Game
+      Een *Game* object staat voor 1 potje Stratego. Er zijn een aantal eigenschappen die je kan halen uit het game object:
+      
+      **id**: Dit is een unieke identifier voor een game. Let op dat dit een string is en geen int! Deze gebruik je in de API vaak in de URL om informatie over bijvoorbeeld het bord op te halen.
+      
+      **opponent**: Dit is de naam van de tegenstander. Als je tegen de computer speelt is dit 'AI'. Als de status van het spel 'waiting_for_opponent' is is deze eigenschap nog niet aanwezig in het Game object.
+      
+      **winner**: Als de state van de game 'game_over' is dan staat in deze eigenschap de naam van de winnaar. Bij een andere state is deze eigenschap niet aanwezig.
+      
+      **state**: Dit is de state waar het spel zich in bevindt. Dit is één van de volgende strings:
+          
+          
+      state        | uitleg
+      ------------ | -------------
+      waiting_for_an_opponent | Als je een game maakt en er is nog geen andere Game waar je bij kan meedoen, dan krijgt de game deze status. Zodra er iemand anders een game maakt zal het spel in de state 'waiting_for_pieces' terecht komen. Het is niet mogelijk om tegen jezelf te spelen. Als er al wel een andere game is die op een opponent wacht zal de game bij het aanmaken meteen in de state 'waiting_for_pieces' komen. Als je tegen de AI speelt sla je deze state meteen over.
+      waiting_for_pieces | Deze state geeft aan dat je nog niet het speelbord hebt doorgegeven. In deze state moet je de speler de mogelijkheid geven om in het spel alle stukken op het bord te plaatsen en te submitten. Zodra je hebt gesubmit komt de game in de state 'waiting_for_opponents_pieces', 'my_turn' of 'opponent_turn'. Afhankelijk van of de tegenstander al zijn speelbord heeft opgestuurd.
+      waiting_for_opponents_pieces | Bij deze state heb je het speelbord al opgestuurd, maar de tegenstander heeft dat nog niet gedaan. Je moet dan wachten tot het spel vanzelf doorgaat naar de volgende state. Als je tegen de AI speelt kom je nooit in deze state.
+      my_turn | Bij deze state is het spel bezig en wacht de server tot je een move doet. Zodra je een move doet komt het spel in de state 'opponent_turn'
+      opponent_turn | Als je een move hebt gedaan komt de game in deze state. Je moet dan wachten tot de tegenstander een zet heeft gedaan, het spel komt dan vanzelf weer in een andere state. Als je tegen de AI speelt komt de game nooit in deze state. De computer doet meteen zijn zet en je bent meteen weer aan de beurt.
+      game_over | Als van één van de spelers de vlag is gepakt is het spel afgelopen en is er iemand de winnaar. Het is niet meer mogelijk om zetten te doen.
+      
+      ## Board
+      Een *Board* object geeft een waargave van het speelbord. Dit is een array van 10 groot (1 voor elke rij op het speelbord), met op elke index weer een array van 10 groot (1 voor elke kolom op het speelbord).
+      
+      In deze array staat op elke plek een string met de 1-letterige code van het speelstuk (zie boven de tabel voor welke codes bij welke speelstukken horen). Of `null` als er geen speelstuk op die positie staat.
+      
+      Een voorbeeld van een speelbord object dat je kan terugkrijgen is:
+      
+      ```json
+      [['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
+       ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
+       ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
+       ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
+       [null, null, null, null, null, null, null, null, null, null],
+       [null, null, null, null, null, null, null, null, null, null],
+       ['7',  'B',  '5',  '2',  '9',  '9',  '1',  '8',  '9',  'B'],
+       ['B',  '7',  '9',  '1',  '4',  '5',  '8',  '5',  '3',  '9'],
+       ['7',  'B',  '4',  '8',  '6',  '4',  '3',  '8',  '7',  '6'],
+       ['B',  'F',  'B',  '5',  '9',  '6',  '6',  '9',  '9',  '8']]
+      ```     
+      Dit is het speelbord zoals het ook op [deze wiki pagina](https://nl.wikipedia.org/wiki/Stratego) te zien is.
+      
+      Bij sommige API calls moet je een coordinaat meegeven. De `row`s zijn de rijen van boven naar beneden en de `column`s zijn de kolommen van links naar rechts. Hieronder zie je het hele bord met in elk vakje de `row,column`
+      
+      
+      | 0,0 | 0,1 | 0,2 | 0,3 | 0,4 | 0,5 | 0,6 | 0,7 | 0,8 | 0,9
+      | -
+      | 1,0 | 1,1 | 1,2 | 1,3 | 1,4 | 1,5 | 1,6 | 1,7 | 1,8 | 1,9
+      | 2,0 | 2,1 | 2,2 | 2,3 | 2,4 | 2,5 | 2,6 | 2,7 | 2,8 | 2,9
+      | 3,0 | 3,1 | 3,2 | 3,3 | 3,4 | 3,5 | 3,6 | 3,7 | 3,8 | 3,9
+      | 4,0 | 4,1 | **4,2*** | **4,3*** | 4,4 | 4,5 | **4,6*** | **4,7*** | 4,8 | 4,9
+      | 5,0 | 5,1 | **5,2*** | **5,3*** | 5,4 | 5,5 | **5,6*** | **5,7*** | 5,8 | 5,9
+      | 6,0 | 6,1 | 6,2 | 6,3 | 6,4 | 6,5 | 6,6 | 6,7 | 6,8 | 6,9
+      | 7,0 | 7,1 | 7,2 | 7,3 | 7,4 | 7,5 | 7,6 | 7,7 | 7,8 | 7,9
+      | 8,0 | 8,1 | 8,2 | 8,3 | 8,4 | 8,5 | 8,6 | 8,7 | 8,8 | 8,9
+      | 9,0 | 9,1 | 9,2 | 9,3 | 9,4 | 9,5 | 9,6 | 9,7 | 9,8 | 9,9
+      
+      Het speelbord is altijd zo gedraaid dat de tegenstander in rij 0 tot en met 4 begint en de speler in rij 6 tot en met 9 begint.
+      
+      De vakjes met een sterretje erbij zijn water, op deze plekken kan nooit een speelstuk komen te staan.
+      
+      ## Actions
+      Als je voor de extra punten wil gaan moet je weten over actions. Deze krijg je terug in de response als je een move hebt gedaan en kan je gebruiken om animaties en extra features toe te voegen.
+      
+      Er zijn drie soorten actions, te herkennen aan de property 'type'
+      
+      ### Reveal
+      
+      Als je een speelstuk van de tegenstander probeert te pakken door er op te gaan staan krijg je te weten welk type speelstuk dit is (Maarschalk, Bom, etc). Dit kan je in jouw spel gebruiken om te laten zien welk type het speelstuk van de tegenstander was voordat je speelstukken van het bord haalt.
+      
+      Als extraatje kan je als jouw stuk verliest van die van de tegenstander het speelstuk van de tegenstander met deze informatie markeren. Zo maak je het de speler makkelijker zodat hij deze het type van het speelstuk waarvan hij net heeft verloren niet meer hoeft te onthouden.
+      
+      ### Destroy
+      
+      Als een speelstuk het verliest van een ander speelstuk dan wordt deze van het bord verwijderd. Via de `destroy` actie kan je zien als dit gebeurd. De `square` eigenschap geeft de positie aan van het verliezende speelstuk *voordat* het heeft bewogen.
+      
+      Deze actie is vooral bedoeld als je een animatie wil doen met het verliezende speelstuk.
+      
+      ## Move
+      
+      Het laatste type action is de move. Deze kan je gebruiken om een animatie te doen van een speelstuk over het bord.
+      
+      De acties staan altijd in de volgorde: 
+      
+      1. reveal
+      * destroy
+      * move
+      
+  
+host: localhost:3000
+basePath: /api
 schemes:
-  # tip: remove http to make production-grade
   - http
   - https
-# format of bodies a client can send (Content-Type)
 consumes:
   - application/json
-# format of the responses to the client (Accepts)
 produces:
   - application/json
 paths:
-  /hello:
-    # binds a127 app logic to a route
-    x-swagger-router-controller: hello_world
+  /games:
+    x-swagger-router-controller: games
     get:
-      description: Returns 'Hello' to the caller
-      # used as the method name of the controller
-      operationId: hello
-      parameters:
-        - name: name
-          in: query
-          description: The name of the person to whom to say hello
-          required: false
-          type: string
+      description: Haal een lijst van alle games op waar je als speler aan mee doet
+      operationId: games
       responses:
         "200":
-          description: Success
+          description: Array van games
           schema:
-            # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
-        # responses may fall through to errors
+            type: "array"
+            items:
+              $ref: "#/definitions/Game"
+              
+    post:
+      description: Maak een nieuwe game aan
+      parameters: 
+        - name: "ai"
+          in: "query"
+          description: "Geeft aan of je een game wil tegen de computer of tegen iemand anders"
+          type: boolean
+          required: true
+      responses:
+        "200":
+          description: De net aangemaakte game. Als er meteen een tegenstander gevonden kon worden is de state "waiting_for_pieces". Anders is deze "waiting_for_opponent".
+          schema:
+            $ref: "#/definitions/Game"
         default:
-          description: Error
+          description: "Fout"
+          schema: 
+            $ref: "#/definitions/Error"
+    delete:
+      description: Verwijder alle games waar je aan mee doet
+      responses:
+        200:
+          description: Alle games zijn verwijderd
+  /games/{id}:
+    get:
+      parameters: 
+      - name: "id"
+        in: "path"
+        description: "Het id van de game"
+        required: true
+        type: "integer"
+      description: Haal de informatie op van een bepaalde game
+      responses:
+        "200":
+          description: De game 
           schema:
-            $ref: "#/definitions/ErrorResponse"
-  /swagger:
-    x-swagger-pipe: swagger_raw
-# complex objects have schema definitions
+            $ref: "#/definitions/Game"
+        "404":
+          description: Als de game met het gegeven ID niet bestaat
+    delete:
+      parameters: 
+      - name: id
+        in: path
+        description: "Het id van de game"
+        required: true
+        type: integer
+      description: Verwijder een game waar je aan meedoet. Ongeacht in welke state het zich bevindt.
+      responses:
+        200:
+          description: Als de game is verwijderd
+        404:
+          description: Als de game met het gegeven ID niet bestaat
+  /games/{id}/board:
+    get:
+      parameters: 
+      - name: id
+        in: path
+        description: Id van de game
+        required: true
+        type: integer
+      description: Haal de huidige toestand van het speelbord op
+      responses:
+        200:
+          description: Het speelbord
+          schema:
+            $ref: "#/definitions/Board"
+        404:
+          description: Als de game met het gegeven ID niet bestaat, of als het bord nog niet bestaat omdat het spel nog niet gestart is.
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      description: Stuur de positie van de speelstukken naar de server. Dit kan alleen als de game in de status 'waiting_for_pieces' is.
+      parameters: 
+        - name: id
+          in: path
+          description: Id van de game
+          type: integer
+          required: true
+        - name: board
+          in: body
+          description: Een 10x10 speelbord met in de onderste vier rijen alle 40 speelstukken zoals de speler deze als startpositie wil opstellen.
+          schema:
+            $ref: "#/definitions/Board"
+          required: true
+      responses:
+        201:
+          description: Het speelbord is aangemaakt
+          schema:
+            $ref: "#/definitions/Game"
+        default:
+          description: "Fout"
+          schema: 
+            $ref: "#/definitions/Error"
+            
+  /games/{id}/move:
+    post:
+      description: Stuur een verplaatsing van speelstuk door om te doen. Dit kan alleen als het spel in de state 'my_turn' is.
+      parameters: 
+        - name: id
+          in: path
+          description: Id van de game
+          type: integer
+          required: true
+        - name: move
+          in: body
+          description: Een verschuiving van een speelstuk
+          schema:
+            properties:
+              game:
+                $ref: "#/definitions/Game"
+          required: true
+      responses:
+        200:
+          description: De verschuiving is uitgevoerd. In de output zie je de nieuwe status van de Game, de nieuwe situatie van het spelbord, en alle acties die er op zijn uitgevoerd.
+          schema:
+            properties:
+              game:
+                $ref: "#/definitions/Game"
+              board:
+                $ref: "#/definitions/Board"
+              actions:
+                type: array
+                items:
+                  $ref: "#/definitions/Action"
+        default:
+          description: "Fout"
+          schema: 
+            $ref: "#/definitions/Error"
+
 definitions:
-  HelloWorldResponse:
-    required:
-      - message
+  Error:
     properties:
       message:
         type: string
-  ErrorResponse:
-    required:
-      - message
+        
+  Game:
+    type: object
+    description: Informatie over een game
     properties:
-      message:
+      id:
         type: string
+        description: Een unieke identifier voor de game
+      opponent:
+        type: string
+        description: De naam van de tegenstander
+      winner:
+        type: string
+        description: De naam van de winnaar (alleen aanwezig als de status 'game_over' is)
+      state:
+        type: string
+        description: De status waar het spel zich in bevind
+        enum:
+          - waiting_for_an_opponent
+          - waiting_for_pieces
+          - waiting_for_opponents_pieces
+          - my_turn
+          - opponent_turn
+          - game_over
+  Board:
+    type: array
+    minItems: 10
+    maxItems: 10
+    description: De positie van alle speelstukken op het bord.
+    items:
+      type: array
+      minItems: 10
+      maxItems: 10
+      items:
+        $ref: "#/definitions/Piece"
+  Action:
+    type: object
+    description: Informatie over iets wat in het spel is gebeurd
+    properties:
+      type:
+        type: string
+        description: Het soort actie
+        enum:
+          - reveal
+          - destroy
+          - move
+      piece:
+        $ref: "#/definitions/Piece"
+      square:
+        $ref: "#/definitions/Square"
+      square_move_to:
+        $ref: "#/definitions/Square"
+
+  Square:
+    type: object
+    description: Coordinaat van een vakje op het speelbord
+    properties:
+      row:
+        minimum: 0
+        maximum: 9
+        type: integer
+      column:
+        minimum: 0
+        maximum: 9
+        type: integer
+        
+  Piece:
+    type: string
+    description: Zie documentatie boven voor een beschrijving van alle speelstukken
+    enum:
+      - 'B'
+      - '10'
+      - '9'
+      - '8'
+      - '7'
+      - '6'
+      - '5'
+      - '4'
+      - '3'
+      - '2'
+      - '1'
+      - 'F'
+      - 'O'
