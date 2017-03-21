@@ -68,7 +68,9 @@ info:
       ## Board
       Een *Board* object geeft een waargave van het speelbord. Dit is een array van 10 groot (1 voor elke rij op het speelbord), met op elke index weer een array van 10 groot (1 voor elke kolom op het speelbord).
       
-      In deze array staat op elke plek een string met de 1-letterige code van het speelstuk (zie boven de tabel voor welke codes bij welke speelstukken horen). Of `null` als er geen speelstuk op die positie staat.
+      In deze array staat op elke plek een string met de 1-letterige code van het speelstuk (zie boven de tabel voor welke codes bij welke speelstukken horen). Of een spatie als er geen speelstuk op die positie staat.
+      
+      Op elke plek waar een speelstuk van de tegenstander staat staat `'O'`
       
       Een voorbeeld van een speelbord object dat je kan terugkrijgen is:
       
@@ -77,8 +79,8 @@ info:
        ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
        ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
        ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
-       [null, null, null, null, null, null, null, null, null, null],
-       [null, null, null, null, null, null, null, null, null, null],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
        ['7',  'B',  '5',  '2',  '9',  '9',  '1',  '8',  '9',  'B'],
        ['B',  '7',  '9',  '1',  '4',  '5',  '8',  '5',  '3',  '9'],
        ['7',  'B',  '4',  '8',  '6',  '4',  '3',  '8',  '7',  '6'],
@@ -122,7 +124,7 @@ info:
       
       Deze actie is vooral bedoeld als je een animatie wil doen met het verliezende speelstuk.
       
-      ## Move
+      ### Move
       
       Het laatste type action is de move. Deze kan je gebruiken om een animatie te doen van een speelstuk over het bord.
       
@@ -149,21 +151,23 @@ paths:
       description: Haal een lijst van alle games op waar je als speler aan mee doet
       operationId: games
       responses:
-        "200":
+        200:
           description: Array van games
           schema:
-            type: "array"
+            type: array
             items:
               $ref: "#/definitions/Game"
               
     post:
       description: Maak een nieuwe game aan
       parameters: 
-        - name: "ai"
-          in: "query"
-          description: "Geeft aan of je een game wil tegen de computer of tegen iemand anders"
+        - name: ai
+          in: query
+          description: Geeft aan of je een game wil tegen de computer of tegen iemand anders
           type: boolean
           required: true
+      security: 
+        - api: []
       responses:
         "200":
           description: De net aangemaakte game. Als er meteen een tegenstander gevonden kon worden is de state "waiting_for_pieces". Anders is deze "waiting_for_opponent".
@@ -187,12 +191,14 @@ paths:
         required: true
         type: "integer"
       description: Haal de informatie op van een bepaalde game
+      security: 
+        - api: []
       responses:
-        "200":
+        200:
           description: De game 
           schema:
             $ref: "#/definitions/Game"
-        "404":
+        404:
           description: Als de game met het gegeven ID niet bestaat
     delete:
       parameters: 
@@ -202,6 +208,8 @@ paths:
         required: true
         type: integer
       description: Verwijder een game waar je aan meedoet. Ongeacht in welke state het zich bevindt.
+      security: 
+        - api: []
       responses:
         200:
           description: Als de game is verwijderd
@@ -216,6 +224,8 @@ paths:
         required: true
         type: integer
       description: Haal de huidige toestand van het speelbord op
+      security: 
+        - api: []
       responses:
         200:
           description: Het speelbord
@@ -239,13 +249,15 @@ paths:
           schema:
             $ref: "#/definitions/Board"
           required: true
+      security: 
+        - api: []
       responses:
         201:
           description: Het speelbord is aangemaakt
           schema:
             $ref: "#/definitions/Game"
         default:
-          description: "Fout"
+          description: Fout
           schema: 
             $ref: "#/definitions/Error"
             
@@ -263,12 +275,16 @@ paths:
           description: Een verschuiving van een speelstuk
           schema:
             properties:
-              game:
-                $ref: "#/definitions/Game"
+              square_from:
+                $ref: "#/definitions/Square"
+              square_to:
+                $ref: "#/definitions/Square"
           required: true
+      security: 
+        - api: []
       responses:
         200:
-          description: De verschuiving is uitgevoerd. In de output zie je de nieuwe status van de Game, de nieuwe situatie van het spelbord, en alle acties die er op zijn uitgevoerd.
+          description: De verschuiving is uitgevoerd. In de output zie je de nieuwe state van de Game, de nieuwe situatie van het spelbord, en alle acties die zijn uitgevoerd naar aanleiding van de zet.
           schema:
             properties:
               game:
@@ -280,10 +296,39 @@ paths:
                 items:
                   $ref: "#/definitions/Action"
         default:
-          description: "Fout"
+          description: Fout
+          schema: 
+            $ref: "#/definitions/Error"
+            
+  /games/{id}/history:
+    get:
+      description: Krijg alle acties die zijn gedaan in het spel. Dit is handig als je animaties wil toevoegen. Dit bevat zowel de acties van de speler als van de tegenspeler. De acties zijn gesorteerd van vroegst naar laatst. 
+      parameters: 
+        - name: id
+          in: path
+          description: Id van de game
+          type: integer
+          required: true
+      security: 
+        - api: []
+      responses:
+        200:
+          description: Een lijst van alle acties
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Action"
+        default:
+          description: Fout
           schema: 
             $ref: "#/definitions/Error"
 
+securityDefinitions:
+  api:
+    type: apiKey
+    in: header
+    name: Avans API Key
+    
 definitions:
   Error:
     properties:
@@ -293,6 +338,10 @@ definitions:
   Game:
     type: object
     description: Informatie over een game
+    example:
+      id: 4F6tY
+      opponent: Paul Wagener
+      state: my_turn
     properties:
       id:
         type: string
@@ -306,6 +355,7 @@ definitions:
       state:
         type: string
         description: De status waar het spel zich in bevind
+        example: my_turn
         enum:
           - waiting_for_an_opponent
           - waiting_for_pieces
@@ -315,6 +365,17 @@ definitions:
           - game_over
   Board:
     type: array
+    example:
+      [[' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       [' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' ',  ' '],
+       ['7',  'B',  '5',  '2',  '9',  '9',  '1',  '8',  '9',  'B'],
+       ['B',  '7',  '9',  '1',  '4',  '5',  '8',  '5',  '3',  '9'],
+       ['7',  'B',  '4',  '8',  '6',  '4',  '3',  '8',  '7',  '6'],
+       ['B',  'F',  'B',  '5',  '9',  '6',  '6',  '9',  '9',  '8']]
     minItems: 10
     maxItems: 10
     description: De positie van alle speelstukken op het bord.
@@ -327,6 +388,12 @@ definitions:
   Action:
     type: object
     description: Informatie over iets wat in het spel is gebeurd
+    example:
+      type: reveal
+      piece: "4"
+      square:
+        row: 3
+        column: 6
     properties:
       type:
         type: string

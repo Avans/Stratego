@@ -2,22 +2,21 @@
 
 var SwaggerExpress = require('swagger-express-mw');
 var app = require('express')();
-module.exports = app; // for testing
+var YAML = require('yamljs');
+
+module.exports = app;
 
 var config = {
-  appRoot: __dirname // required config
+  appRoot: __dirname
 };
 
 SwaggerExpress.create(config, function(err, swaggerExpress) {
   if (err) { throw err; }
 
-  // install middleware
   swaggerExpress.register(app);
 
-  var port = process.env.PORT || 10010;
-  app.listen(port);
+  app.listen(process.env.PORT || 3000);
 
-  if (swaggerExpress.runner.swagger.paths['/hello']) {
-    console.log('try this:\ncurl http://127.0.0.1:' + port + '/hello?name=Scott');
-  }
+  var swaggerUi = require('swagger-ui-express');
+  app.use('/', swaggerUi.serve, swaggerUi.setup(YAML.load('./api/swagger/swagger.yaml')));
 });
