@@ -8,6 +8,12 @@ info:
   description: |
       Met deze API is het mogelijk om Stratego te spelen tegen je medestudenten, of tegen de computer (AI). Het is mogelijk om meerdere potjes tegelijk te spelen, elk tegen een andere tegenstander.
       
+      ## API key
+      
+      Om de API te gebruiken heb je een API key nodig. Deze kan je op onderstaande pagina ophalen:
+      
+      [API key ophalen](api_key)
+      
       ## Spelregels
       Bij stratego speel je op een speelbord van 10x10 vakjes. 
       Aan het begin van het spel staan er twee legers, elk bestaand uit 40 stukken in verschillende rangen, tegenover elkaar. De bedoeling is dat de vlag van de tegenstander wordt veroverd.
