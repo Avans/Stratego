@@ -11,7 +11,7 @@ var app = express();
 
 // Data Access Layer
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/stratego');
+mongoose.connect(process.env.DB_CONNECTION || 'mongodb://localhost:27017/stratego');
 require('./models/Game');
 require('./models/User');
 
