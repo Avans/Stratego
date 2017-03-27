@@ -23,10 +23,10 @@ var actionSchema = new mongoose.Schema({
  */
 var gameSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
-  player1: { type: String, required: true },
-  player2: String,
+  player1: { type: String, required: true, ref: 'User'},
+  player2: { type: String, required: true, ref: 'User'},
   is_vs_ai: {type: Boolean, required: true},
-  winner: String,
+  winner: { type: String, required: true, ref: 'User'},
   state: { type: String, enum: [
         'waiting_for_an_opponent',
         'waiting_for_pieces',
@@ -40,6 +40,13 @@ var gameSchema = new mongoose.Schema({
   },
   actions: {type: [actionSchema], required: true }
 });
+
+/**
+ * Find games involving a User
+ */
+gameSchema.query.findWithUser = function(user) {
+  return this.find({$or: [{player1: user}, {player2: user}]});
+};
 
 function validateBoard() {
     // TODO

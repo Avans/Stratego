@@ -20,6 +20,7 @@ module.exports = function(app) {
         });
     });
 
+    // Strategy for logging in Avans
     var AvansStrategy = require('passport-avans').Strategy;
     passport.use(new AvansStrategy({
         consumerKey: '201cb65cc4f38f60d4f35e677dd5d119a12d9294',
@@ -56,8 +57,18 @@ module.exports = function(app) {
         if(!req.user) {
             return res.redirect('/api_key/login')
         }
-        res.json({user: req.user});
+        res.send(`<html>
+  <body style="text-align: center; margin: 4em; font-family: Helvetica;">
+    <h1>De API key voor `+req.user.name+` is:</h1>
+
+    <input type="text" value="`+req.user.api_key+`" style="font-size: 2em; padding: 1.2em; width: 80%; font-family: monospace; text-align: center;">
+    <br><br>
+    Gebruik deze in de URL van de API, bijvoorbeeld:<br>
+    <a href="/api/games?api_key=`+req.user.api_key+`">https://strategoavans.heroku.com/api/games?api_key=`+req.user.api_key+`</a>
+  </body>
+</html>`);
     });
+
     app.get('/api_key/login', passport.authenticate('avans'))
     app.get('/api_key/callback', passport.authenticate('avans', { successRedirect: '/api_key', failureRedirect: '/api_key/login' }));
 };

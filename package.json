@@ -2,12 +2,13 @@
   "name": "stratego",
   "version": "0.0.1",
   "private": true,
-  "description": "New Swagger API Project",
+  "description": "Stratego API",
   "keywords": [],
   "author": "",
   "license": "",
   "main": "app.js",
   "dependencies": {
+    "async": "^2.1.5",
     "body-parser": "^1.17.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.12.3",
@@ -26,6 +27,6 @@
   },
   "scripts": {
     "start": "node app.js",
-    "test": "swagger project test"
+    "test": "DB_CONNECTION=mongodb://localhost:27017/stratego_test swagger project test"
   }
 }

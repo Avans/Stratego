@@ -6,61 +6,63 @@ info:
     name: Paul Wagener
     email: p.wagener@avans.nl
   description: |
+      ![](static/stratego.jpg)
+      
       Met deze API is het mogelijk om Stratego te spelen tegen je medestudenten, of tegen de computer (AI). Het is mogelijk om meerdere potjes tegelijk te spelen, elk tegen een andere tegenstander.
-      
+
       ## API key
-      
+
       Om de API te gebruiken heb je een API key nodig. Deze kan je op onderstaande pagina ophalen:
-      
+
       [API key ophalen](api_key)
-      
+
       ## Spelregels
-      Bij stratego speel je op een speelbord van 10x10 vakjes. 
+      Bij stratego speel je op een speelbord van 10x10 vakjes.
       Aan het begin van het spel staan er twee legers, elk bestaand uit 40 stukken in verschillende rangen, tegenover elkaar. De bedoeling is dat de vlag van de tegenstander wordt veroverd.
-      
+
       Aan het begin van het spel moeten alle 40 stukken in de onderste vier rijen worden geplaatst. De volgende stukken moeten geplaatst worden:
-      
+
       Code  | Naam       | Aantal | Bewegen
       ------|------------|--------|----------
       B     | Bom        | 6      | Mag niet bewegen
-      10    | Maarschalk | 1      | 
-      9     | Generaal   | 1      | 
-      8     | Kolonel    | 2      | 
-      7     | Majoor     | 3      | 
-      6     | Kapitein   | 4      | 
-      5     | Luitenant  | 4      | 
-      4     | Sergeant   | 4      | 
-      3     | Mineur     | 5      | 
+      10    | Maarschalk | 1      |
+      9     | Generaal   | 1      |
+      8     | Kolonel    | 2      |
+      7     | Majoor     | 3      |
+      6     | Kapitein   | 4      |
+      5     | Luitenant  | 4      |
+      4     | Sergeant   | 4      |
+      3     | Mineur     | 5      |
       2     | Verkenner  | 8      | Mag horizontaal en verticaal zo ver mogelijk bewegen, maar niet over andere stukken heen en niet over water. De verkenner mag op die manier ook een stuk proberen te slaan.
-      1     | Spion      | 1      | 
+      1     | Spion      | 1      |
       F     | Vlag       | 1      | Mag niet bewegen
 
       Spelers zijn om en om aan de beurt. Als de speler aan de beurt mag hij één van zijn stukken één vakje horizontaal of verticaal verplaatsen, niet diagonaal. Stukken mogen niet over elkaar heen springen. Zoals hierboven te zien is geldt voor sommige stukken een uitzondering.
-      
+
       In het midden van het bord zijn 8 vakjes water, het is voor geen enkel stuk mogelijk om hier overheen te bewegen.
-      
+
       Als je een stuk van de tegenstander probeert te slaan door op hetzelfde vakje te bewegen krijg je te zien wat voor soort speelstuk het is. Het stuk met de hoogste waarde wint dan en mag op het vakje staan, het andere stuk wordt van het bord verwijderd. Op deze regel zijn een paar uitzonderingen:
-      
+
       * Als de vlag gepakt wordt is het spel afgelopen, de winnaar is de speler die de vlag heeft gepakt.
       * Als de spion de maarschalk pakt wint de spion (let op: als de maarschalk de spion pakt wint de maarschalk!)
       * Als de bom wordt gepakt wint de bom, met uitzondering van de mineur die het wint van de bom.
-      
+
       Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden in de API aangegeven met de code 'O' (van 'opponent'). Als je ze probeert te pakken krijg je wel even te zien welk type stuk je probeert te pakken. Dit laat je aan de gebruiker laten zien zodat hier rekening mee kan houden in de verdere loop van het spel.
-      
+
       Alle spelregels zijn al geïmplementeerd in de server, je hoeft voor deze opdracht dus alleen maar de UI te maken die het mogelijk maakt om in de browser een potje te spelen. Je moet in je code wel checken op ongeldige zetten, val de server dus niet lastig met zetten die niet uit te voeren zijn!
 
       ## Game
       Een *Game* object staat voor 1 potje Stratego. Er zijn een aantal eigenschappen die je kan halen uit het game object:
-      
+
       **id**: Dit is een unieke identifier voor een game. Let op dat dit een string is en geen int! Deze gebruik je in de API vaak in de URL om informatie over bijvoorbeeld het bord op te halen.
-      
+
       **opponent**: Dit is de naam van de tegenstander. Als je tegen de computer speelt is dit 'AI'. Als de status van het spel 'waiting_for_opponent' is is deze eigenschap nog niet aanwezig in het Game object.
-      
+
       **winner**: Als de state van de game 'game_over' is dan staat in deze eigenschap de naam van de winnaar. Bij een andere state is deze eigenschap niet aanwezig.
-      
+
       **state**: Dit is de state waar het spel zich in bevindt. Dit is één van de volgende strings:
-          
-          
+
+
       state        | uitleg
       ------------ | -------------
       waiting_for_an_opponent | Een Game krijgt deze state als je een Game maakt en er is nog geen andere Game waar je aan mee kan doen. Zodra er iemand anders een game maakt zal die jouw game joinen en zal de game in de state 'waiting_for_pieces' terecht komen. Het is niet mogelijk om tegen jezelf te spelen. Als er al wel een andere game is die op een opponent wacht zal jij die game joinen en zal de game meteen in de state 'waiting_for_pieces' komen. Als je tegen de AI speelt sla je deze state altijd over.
@@ -69,18 +71,18 @@ info:
       my_turn | Bij deze state is het spel bezig en wacht de server tot je een move post. Zodra je een move doet komt het spel in de state 'opponent_turn', tenzij je tegen de computer speelt.
       opponent_turn | Als je een move hebt gedaan komt de game in deze state. Je moet dan wachten tot de tegenstander een zet heeft gedaan, het spel komt dan vanzelf weer in een andere state. Als je tegen de AI speelt komt de game nooit in deze state. De computer doet meteen zijn zet en je bent meteen weer aan de beurt.
       game_over | Als van één van de spelers de vlag is gepakt is het spel afgelopen en is er iemand de winnaar. Het is niet meer mogelijk om zetten te doen.
-      
+
       ![States](static/states.svg)
-      
+
       ## Board
-      Een *Board* object geeft een waargave van het speelbord. Dit is een array van 10 groot (1 voor elke rij op het speelbord), met op elke plek weer een array van 10 groot (1 voor elke kolom op het speelbord).
-      
+      Een *Board* object geeft een weergave van het speelbord. Dit is een array van 10 groot (1 voor elke rij op het speelbord), met op elke plek weer een array van 10 groot (1 voor elke kolom op het speelbord).
+
       In deze array staat op elke plek een string met de 1-letterige code van het speelstuk (zie boven de tabel voor welke codes bij welke speelstukken horen).
-      
+
       Op elke plek waar een speelstuk van de tegenstander staat staat `'O'`. Als er geen speelstuk op een vakje staat staat er `' '` (spatie) op die plek.
-      
+
       Een voorbeeld van een speelbord object dat je kan terugkrijgen is:
-      
+
       ```json
       [['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
        ['O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O',  'O'],
@@ -92,12 +94,12 @@ info:
        ['B',  '7',  '9',  '1',  '4',  '5',  '8',  '5',  '3',  '9'],
        ['7',  'B',  '4',  '8',  '6',  '4',  '3',  '8',  '7',  '6'],
        ['B',  'F',  'B',  '5',  '9',  '6',  '6',  '9',  '9',  '8']]
-      ```     
+      ```
       Dit is het speelbord zoals het ook op [deze wiki pagina](https://nl.wikipedia.org/wiki/Stratego) te zien is.
-      
+
       Bij sommige API calls heb je te maken met een coordinaat. De `row`s zijn de rijen van boven naar beneden en de `column`s zijn de kolommen van links naar rechts. Hieronder zie je het hele bord met in elk vakje het `row,column` coordinaat
-      
-      
+
+
       | 0,0 | 0,1 | 0,2 | 0,3 | 0,4 | 0,5 | 0,6 | 0,7 | 0,8 | 0,9
       | -
       | 1,0 | 1,1 | 1,2 | 1,3 | 1,4 | 1,5 | 1,6 | 1,7 | 1,8 | 1,9
@@ -109,47 +111,53 @@ info:
       | 7,0 | 7,1 | 7,2 | 7,3 | 7,4 | 7,5 | 7,6 | 7,7 | 7,8 | 7,9
       | 8,0 | 8,1 | 8,2 | 8,3 | 8,4 | 8,5 | 8,6 | 8,7 | 8,8 | 8,9
       | 9,0 | 9,1 | 9,2 | 9,3 | 9,4 | 9,5 | 9,6 | 9,7 | 9,8 | 9,9
-      
+
       Het speelbord is altijd zo gedraaid dat de tegenstander in rij 0 tot en met 4 begint en de speler in rij 6 tot en met 9 begint.
-      
+
       De vakjes met een sterretje erbij zijn water, op deze plekken kan nooit een speelstuk komen te staan.
-      
+
       ## Actions
-      Als je voor de extra punten wil gaan heb je actions nodig. Deze krijg je terug in de response als je een move hebt gedaan en kan je gebruiken om animaties en extra features toe te voegen.
+      In de API komt het begrip actions naar voren. Dit zijn alle acties die gebeuren tijdens een potje Stratego. Denk hierbij aan: een speelstuk verplaatsen, een speelstuk te zien krijgen van de tegenstander of een speelstuk verwijderen van het bord omdat die geslagen is.
       
-      Er zijn drie soorten actions, te herkennen aan de property `'type'`: `'reveal'`, `'destroy'` of `'move'`. Een action heeft ook altijd de property `'square'`, maar die betekent voor elk type net iets anders.
+      Actions heb je alleen nodig als je voor de extra features gaat (animaties, bijhouden welke speelstukken van de vijand waar staan, historie laten zien). Ga je alleen voor de voldoende, dan hoef je alleen te weten hoe je een move doet en kan je alles hieronder negeren.
+
+      Alles wat er gebeurd tijdens een potje Stratego wordt bijgehouden in een lijst van actions. Je zou als je wil kunnen beginnen met het startbord (staat in het Game object), alle actions die er zijn er op uitvoeren en uitkomen bij hoe het huidige bord er uit ziet. 
       
+      Er zijn drie soorten actions, te herkennen aan de property `'type'`: `'reveal_piece'`, `'remove_piece'` of `'move_piece'`. 
+      
+      Een action heeft ook altijd de property `'square'`, maar die betekent voor elk type net iets anders.
+
       ### Reveal
-      
-      Als je een speelstuk van de tegenstander probeert te pakken door er op te gaan staan krijg je te weten welk type speelstuk dit is (Maarschalk, Bom, etc). Dit kan je in jouw spel gebruiken om te laten zien welk type het speelstuk van de tegenstander was voordat je speelstukken van het bord haalt.
-      
+
+      Als je een speelstuk van de tegenstander slaat door er op te gaan staan krijg je te weten welk type speelstuk dit is (Maarschalk, Bom, etc). Dit kan je in jouw spel gebruiken om te laten zien welk type het speelstuk van de tegenstander was voordat je speelstukken van het bord haalt.
+
       Als extraatje kan je als jouw stuk verliest van die van de tegenstander het speelstuk van de tegenstander met deze informatie markeren. Zo maak je het de speler makkelijker zodat hij deze het type van het speelstuk waarvan hij net heeft verloren niet meer hoeft te onthouden.
-      
+
       De `'square'` eigenschap is het coordinaat van het speelstuk van de tegenstander dat je te weten komt.
-      
+
       In de `'piece'` eigenschap van de action staat welk type dat speelstuk is.
 
       ### Destroy
-      
+
       Deze actie staat voor een speelstuk dat van het bord moet worden verwijderd omdat het verloren heeft in een aanval.
-      
+
       De `square` eigenschap geeft de positie aan van het verliezende speelstuk *voordat* het heeft bewogen.
-      
+
       Deze actie is vooral bedoeld als je een animatie wil doen met het verliezende speelstuk.
-      
+
       ### Move
-      
-      Het laatste type action is de move. Deze kan je gebruiken om een animatie te doen van een speelstuk over het bord. De `'square'` eigenschap is het coordinaat van het stuk dat gaat bewegen. De `'square_move_to'` eigenschap is het coordinaat waar het heen beweegt.
-      
-      De acties staan per aanval altijd in de volgorde: 
-      
+
+      Het laatste type action is de move. Deze kan je gebruiken om een animatie te doen van een speelstuk over het bord. De `'square'` eigenschap is het coordinaat van het stuk dat gaat bewegen. De `'square_to'` eigenschap is het coordinaat waar het heen beweegt.
+
+      De acties staan per aanval altijd in de volgorde:
+
       1. reveal
       * destroy
       * move
-      
-      # Klik op 'Expand Operations' hier onder om de API te zien.
-      
-  
+
+      # Klik op 'Expand Operations' hieronder om de API te zien.
+
+
 host: localhost:3000
 basePath: /api
 schemes:
@@ -164,7 +172,7 @@ paths:
     x-swagger-router-controller: games
     get:
       description: Haal een lijst van alle games op waar je als speler aan mee doet.
-      security: 
+      security:
         - api: []
       responses:
         200:
@@ -173,16 +181,17 @@ paths:
             type: array
             items:
               $ref: "#/definitions/Game"
-              
+
     post:
       description: Maak een nieuwe game aan
-      parameters: 
+      parameters:
         - name: ai
-          in: query
+          in: body
           description: Geeft aan of je een game wil tegen de computer of tegen iemand anders
-          type: boolean
+          schema:
+            type: boolean
           required: true
-      security: 
+      security:
         - api: []
       responses:
         "200":
@@ -191,71 +200,53 @@ paths:
             $ref: "#/definitions/Game"
         default:
           description: "Fout"
-          schema: 
+          schema:
             $ref: "#/definitions/Error"
     delete:
-      description: Verwijder alle games waar je aan mee doet
-      security: 
+      description: Verwijder alle games waar je aan mee doet. Ongeacht in welke state ze zich bevinden.
+      security:
         - api: []
       responses:
         200:
           description: Alle games zijn verwijderd
   /games/{id}:
     get:
-      parameters: 
-      - name: "id"
-        in: "path"
-        description: "Het id van de game"
+      parameters:
+      - name: id
+        in: path
+        description: Het id van de game
         required: true
-        type: "integer"
+        type: integer
       description: Haal de informatie op van een bepaalde game
-      security: 
+      security:
         - api: []
       responses:
         200:
-          description: De game 
+          description: De game
           schema:
             $ref: "#/definitions/Game"
         404:
           description: Als de game met het gegeven ID niet bestaat
     delete:
-      parameters: 
+      parameters:
       - name: id
         in: path
-        description: "Het id van de game"
+        description: Het id van de game
         required: true
         type: integer
       description: Verwijder een game waar je aan meedoet. Ongeacht in welke state het zich bevindt.
-      security: 
+      security:
         - api: []
       responses:
         200:
           description: Als de game is verwijderd
         404:
           description: Als de game met het gegeven ID niet bestaat
-  /games/{id}/board:
-    get:
-      parameters: 
-      - name: id
-        in: path
-        description: Id van de game
-        required: true
-        type: integer
-      description: Haal de huidige toestand van het speelbord op
-      security: 
-        - api: []
-      responses:
-        200:
-          description: Het speelbord
-          schema:
-            $ref: "#/definitions/Board"
-        404:
-          description: Als de game met het gegeven ID niet bestaat, of als het bord nog niet bestaat omdat het spel nog niet gestart is.
-          schema:
-            $ref: "#/definitions/Error"
+
+  /games/{id}/startboard:
     post:
       description: Stuur de positie van de speelstukken naar de server. Dit kan alleen als de game in de status 'waiting_for_pieces' is.
-      parameters: 
+      parameters:
         - name: id
           in: path
           description: Id van de game
@@ -267,7 +258,7 @@ paths:
           schema:
             $ref: "#/definitions/StartBoard"
           required: true
-      security: 
+      security:
         - api: []
       responses:
         201:
@@ -276,13 +267,40 @@ paths:
             $ref: "#/definitions/Game"
         default:
           description: Fout
-          schema: 
+          schema:
             $ref: "#/definitions/Error"
-            
-  /games/{id}/move:
+
+  /games/{id}/actions:
+    get:
+      description: |
+        Krijg een lijst van alle actions sinds het spel is begonnen, van zowel jezelf als van de tegenstander. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat.
+        
+        Let op dat een move niet alleen een verplaatsing van een speelstuk hoeft te zijn. Lees het hoofdstuk 'Move' voor meer informatie hierover.
+        
+        De moves zijn gesorteerd van minst recent naar meest recent. Deze API heb je alleen nodig als je voor de extra's gaat.
+      parameters:
+        - name: id
+          in: path
+          description: Id van de game
+          type: integer
+          required: true
+      security:
+        - api: []
+      responses:
+        200:
+          description: Een lijst van alle acties
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Action"
+        default:
+          description: Fout
+          schema:
+            $ref: "#/definitions/Error"
+
     post:
       description: Stuur een verplaatsing van speelstuk door om te doen. Dit kan alleen als het spel in de state 'my_turn' is.
-      parameters: 
+      parameters:
         - name: id
           in: path
           description: Id van de game
@@ -293,71 +311,48 @@ paths:
           description: Een verschuiving van een speelstuk
           schema:
             properties:
-              square_from:
+              square:
                 $ref: "#/definitions/Square"
               square_to:
                 $ref: "#/definitions/Square"
           required: true
-      security: 
+      security:
         - api: []
       responses:
         200:
-          description: De verschuiving is uitgevoerd. In de output zie je de nieuwe state van de Game, de nieuwe situatie van het spelbord, en alle acties die zijn uitgevoerd naar aanleiding van de zet.
+          description: |
+            De verschuiving is uitgevoerd. In de output zie je de nieuwe state van de Game en alle acties die zijn uitgevoerd naar aanleiding van de verschuiving.
+            
+            Bij een normale verschuiving is dit alleen de actie 'move_piece'. Als er een stuk geslagen wordt zijn dit opeenvolgend de acties:
+            
+            - reveal_piece
+            - remove_piece
+            - move_piece
           schema:
             properties:
               game:
                 $ref: "#/definitions/Game"
-              board:
-                $ref: "#/definitions/Board"
               actions:
                 type: array
                 items:
                   $ref: "#/definitions/Action"
         default:
           description: Fout
-          schema: 
-            $ref: "#/definitions/Error"
-            
-  /games/{id}/history:
-    get:
-      description: Krijg de startpositie van het bord en een lijst van alle acties die zijn gedaan in het spel. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat. Dit bevat zowel de acties van de speler als van de tegenspeler. De acties zijn gesorteerd van vroegst naar laatst. Deze API heb je alleen nodig als je voor de extra's gaat.
-      parameters: 
-        - name: id
-          in: path
-          description: Id van de game
-          type: integer
-          required: true
-      security: 
-        - api: []
-      responses:
-        200:
-          description: Een lijst van alle acties
           schema:
-            type: object
-            properties:
-              board_start_position:
-                $ref: "#/definitions/Board"
-              actions:
-                type: array
-                items:
-                  $ref: "#/definitions/Action"
-        default:
-          description: Fout
-          schema: 
             $ref: "#/definitions/Error"
 
 securityDefinitions:
   api:
     type: apiKey
     in: query
-    name: apikey
-    
+    name: api_key
+
 definitions:
   Error:
     properties:
       message:
         type: string
-        
+
   Game:
     type: object
     description: Informatie over een game
@@ -386,7 +381,11 @@ definitions:
           - my_turn
           - opponent_turn
           - game_over
-
+      board:
+        $ref: "#/definitions/Board"
+      start_board:
+        $ref: "#/definitions/Board"
+          
   StartBoard:
     type: array
     example:
@@ -439,14 +438,14 @@ definitions:
         type: string
         description: Het soort actie
         enum:
-          - reveal
-          - destroy
-          - move
+          - reveal_piece
+          - remove_piece
+          - move_piece
       piece:
         $ref: "#/definitions/Piece"
       square:
         $ref: "#/definitions/Square"
-      square_move_to:
+      square_to:
         $ref: "#/definitions/Square"
 
   Square:
@@ -461,7 +460,7 @@ definitions:
         minimum: 0
         maximum: 9
         type: integer
-        
+
   Piece:
     type: string
     description: Zie documentatie boven voor een beschrijving van alle speelstukken
