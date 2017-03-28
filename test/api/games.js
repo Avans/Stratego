@@ -226,7 +226,7 @@ describe('DELETE /api/games', function() {
 /**
  * GET /api/games/{id}
  */
- describe('GET /api/games/:id', function() {
+describe('GET /api/games/:id', function() {
     it('should return a game', async function() {
         let game = new Game();
         game.player1 = test_user._id;
@@ -255,4 +255,28 @@ describe('DELETE /api/games', function() {
                             .get('/api/games/' + game._id)
                             .expect(404);
     });
- });
+});
+
+
+/**
+ * DELETE /api/games/{id}
+ */
+describe('DELETE /api/games/:id', function() {
+    it('should delete a game', async function() {
+        let game = new Game();
+        game.player1 = test_user._id;
+        game = await game.save();
+
+        const res = await api_request
+                            .delete('/api/games/' + game._id)
+                            .expect(200);
+
+        should.not.exist(await Game.findById(game._id));
+    });
+
+    it('should send a 404 if the game doesn\'t exist', async function() {
+        const res = await api_request
+                            .delete('/api/games/Dfk4S')
+                            .expect(404);
+    });
+});
