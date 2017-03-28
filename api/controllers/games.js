@@ -1,7 +1,6 @@
 'use strict';
 
 var mongoose = require('mongoose');
-var User = mongoose.model('User');
 var Game = mongoose.model('Game');
 
 module.exports = {
