@@ -25,6 +25,9 @@
     "should": "^7.1.0",
     "supertest": "^1.0.0"
   },
+  "engines": {
+    "node": "7.x"
+  },
   "scripts": {
     "start": "node --harmony-async-await app.js",
     "test": "DB_CONNECTION=mongodb://localhost:27017/stratego_test mocha --harmony-async-await test/**/*.js"
