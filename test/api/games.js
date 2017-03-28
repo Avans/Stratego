@@ -1,5 +1,5 @@
 var should = require('should');
-var server = require('../../../app');
+var server = require('../../app');
 var request = require('supertest')(server);
 
 var mongoose = require('mongoose');
@@ -222,3 +222,37 @@ describe('DELETE /api/games', function() {
         should.exist(game);
     });
 });
+
+/**
+ * GET /api/games/{id}
+ */
+ describe('GET /api/games/:id', function() {
+    it('should return a game', async function() {
+        let game = new Game();
+        game.player1 = test_user._id;
+        game = await game.save();
+
+        const res = await api_request
+                            .get('/api/games/' + game._id)
+                            .expect(200);
+
+        res.body.should.eql(game.outputForUser(test_user));
+    });
+
+    it('should send a 404 if the game doesn\'t exist', async function() {
+        const res = await api_request
+                            .get('/api/games/D2Vr5')
+                            .expect(404);
+    });
+
+    it('should send a 404 if the user has not joined the game', async function() {
+        let game = new Game();
+        game.player1 = 'some_player';
+        game.player2 = 'some_other_player';
+        game = await game.save();
+
+        const res = await api_request
+                            .get('/api/games/' + game._id)
+                            .expect(404);
+    });
+ });

@@ -59,6 +59,19 @@ gameSchema.query.findWithUser = function(user) {
     return this.find({$or: [{player1: user}, {player2: user}]});
 };
 
+/**
+ * Find a game by id, only if a user is playing in it
+ */
+gameSchema.statics.findByIdAndUser = async function(id, user) {
+    var games = await this.find({_id: id}).findWithUser(user);
+
+    if(games.length === 0) {
+        return null;
+    } else {
+        return games[0];
+    }
+}
+
 gameSchema.methods.setState = function(state) {
   this.state = state;
   // TODO: emit with sockets
