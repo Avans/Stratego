@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-
+var randomstring = require('randomstring');
 
 /**
  * Coordinate
@@ -14,7 +14,7 @@ var coordinateSchema = new mongoose.Schema({
  * Action
  */
 var actionSchema = new mongoose.Schema({
-    type: {type: String, required: true, enum: ['reveal', 'destroy', 'move']},
+    type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
     square: {type: coordinateSchema, required: true}
 });
 
@@ -22,39 +22,42 @@ var actionSchema = new mongoose.Schema({
  * Game
  */
 var gameSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
+  _id: { type: String, required: true, index: true, unique: true, default: () => randomstring.generate(5) },
   player1: { type: String, required: true, ref: 'User'},
-  player2: { type: String, required: true, ref: 'User'},
-  is_vs_ai: {type: Boolean, required: true},
-  winner: { type: String, required: true, ref: 'User'},
-  state: { type: String, enum: [
+  player2: { type: String, ref: 'User'},
+  is_vs_ai: {type: Boolean},
+  winner: { type: String, ref: 'User'},
+  state: { type: String, required: true, default: 'waiting_for_an_opponent', enum: [
         'waiting_for_an_opponent',
         'waiting_for_pieces',
         'started',
         'game_over',
         ]},
-  board: {
-    type: [[]],
-    required: true,
-    validate: [validateBoard, "{PATH} is not a valid board"]
+  start_board: {
+    type: [[String]],
+    validate: [validateBoard, "{PATH} is not a valid board"],
+    default: undefined
   },
-  actions: {type: [actionSchema], required: true }
+  current_board: {
+    type: [[String]],
+    validate: [validateBoard, "{PATH} is not a valid board"],
+    default: undefined
+  },
+  actions: {type: [actionSchema], default: []}
 });
 
 /**
  * Find games involving a User
  */
 gameSchema.query.findWithUser = function(user) {
-  return this.find({$or: [{player1: user}, {player2: user}]});
+    return this.find({$or: [{player1: user}, {player2: user}]});
 };
 
 function validateBoard() {
     // TODO
-    return false;
+    return true;
 }
 
 mongoose.model('Game', gameSchema);
 mongoose.model('Action', actionSchema);
 mongoose.model('Coordinate', coordinateSchema);
-
-

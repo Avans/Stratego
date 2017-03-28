@@ -10,13 +10,11 @@ module.exports = {
 
 
 function getGames(req, res) {
-    console.log('haya');
-    Game.find().findWithUser(req.user).exec(function(err, games) {
-        console.log('GAMES', err, games);
-        res.json(games);
-    });
-    res.json([]);
+    (async () => {
 
+        const games = await Game.find().findWithUser(req.user);
+        res.json(games);
+    })();
 }
 
 function postGames(req, res) {

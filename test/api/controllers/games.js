@@ -1,7 +1,6 @@
 var should = require('should');
 var server = require('../../../app');
 var request = require('supertest')(server);
-var async = require('async');
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
@@ -9,6 +8,8 @@ var Game = mongoose.model('Game');
 
 
 const API_KEY = 'TEST_API_KEY';
+const TEST_GAME_ID = 'test_game_id';
+var test_user;
 
 /**
  * Returns a request with the correct url and expectations
@@ -37,25 +38,15 @@ var api_request = function() {
 /**
  * Ensure that the environment is the same by resetting the database for each test
  */
-beforeEach(function(done) {
-    async.waterfall([
-        // Remove old games and users
-        function(done) {
-            User.remove({}, done);
-        },
-        function(err, done) {
-            Game.remove({}, done);
-        },
+beforeEach(async function() {
+    await User.remove({});
+    await Game.remove({});
 
-        // Set up a test user
-        function(err, done) {
-            var user = new User();
-            user._id = 'test_id';
-            user.name = 'Test User';
-            user.api_key = API_KEY;
-            user.save(done);
-        },
-    ], done);
+    test_user = new User();
+    test_user._id = 'test_id';
+    test_user.name = 'Test User';
+    test_user.api_key = API_KEY;
+    await test_user.save();
 });
 
 /**
@@ -64,45 +55,44 @@ beforeEach(function(done) {
 describe('api_key checks', function() {
     const SOME_API = '/api/games';
 
-    it('should give an error when the api_key is missing', function(done) {
-        request
-          .get(SOME_API)
-          .expect(403)
-          .end(function(err, res) {
-              res.body.should.eql({
-                message: 'Geef via de URL je api_key mee'
-              });
-              done();
-          })
+    it('should give an error when the api_key is missing', async function() {
+        const res = await request.get(SOME_API).expect(403);
+
+        res.body.should.eql({
+            message: 'Geef via de URL je api_key mee'
+        });
     });
 
-    it('should give an error when the api_key is unknown', function(done) {
-      request
-          .get(SOME_API + '?api_key=nonexistingapikey')
-          .expect(403)
-          .end(function(err, res) {
-              res.body.should.eql({
-                message: 'De API key "nonexistingapikey" is niet bekend'
-              })
-              done();
-          })
+    it('should give an error when the api_key is unknown', async function() {
+        const res = await request.get(SOME_API + '?api_key=nonexistingapikey').expect(403);
+
+        res.body.should.eql({
+            message: 'De API key "nonexistingapikey" is niet bekend'
+        });
     })
 });
 
 describe('GET /api/games', function() {
 
-    //it('it should', function(done) {
+    it('should return no games', async function() {
+        const res = await api_request.get('/api/games').expect(200);
 
-        /*request(server)
-          .get('/api/games')
-          .expect(200)
-          .end(function(err, res) {
-            should.not.exist(err);
+        res.body.should.eql([]);
+      });
 
-            res.body.should.eql([]);
+    it('should return a game as player 1', async function() {
+        let game = new Game();
+        game._id = TEST_GAME_ID;
+        game.player1 = test_user._id;
+        game = await game.save()
 
-            done();
-          });
-      });*/
+        const res = await api_request.get('/api/games').expect(200);
+
+        /*res.body.should.eql([{
+            "id": "4F6tY",
+            "state": "waiting_for_opponent"
+        }]);*/
+    });
+
 
 });
