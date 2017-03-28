@@ -58,9 +58,7 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     var games = require('./api/controllers/games');
     app.get('/api/games', games.get);
     app.post('/api/games', games.post);
-
-    // install middleware
-    //swaggerExpress.register(app);
+    app.delete('/api/games', games.delete);
 
     // API documentatie
     var swaggerUi = require('swagger-ui-express');

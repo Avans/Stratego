@@ -6,7 +6,8 @@ var Game = mongoose.model('Game');
 
 module.exports = {
     get: getGames,
-    post: postGames
+    post: postGames,
+    delete: deleteGames
 };
 
 /**
@@ -57,6 +58,12 @@ function postGames(req, res) {
     })();
 }
 
+/**
+ * Delete all games with the user
+ */
 function deleteGames(req, res) {
-
+    (async () => {
+        await Game.find().findWithUser(req.user).remove();
+        res.send('');
+    })();
 }

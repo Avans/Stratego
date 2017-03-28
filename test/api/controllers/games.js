@@ -30,7 +30,7 @@ var api_request = function() {
             return apify_request(request.post(apify_url(url)).type('json'));
         },
         delete: function(url) {
-            return apify_request(request.delete(apify_url(url)));
+            return apify_request(request.del(apify_url(url)));
         }
     }
 }();
@@ -121,6 +121,7 @@ describe('GET /api/games', function() {
  */
 describe('POST /api/games', function() {
     it('should validate the input', async function() {
+        // Temporarily silence the error that this gives
         const log = console.log;
         console.log = () => {}
 
@@ -180,5 +181,44 @@ describe('POST /api/games', function() {
 
         game.player2.should.eql(test_user._id);
         game.state.should.eql('waiting_for_pieces');
+    });
+});
+
+/**
+ * DELETE /api/games
+ */
+describe('DELETE /api/games', function() {
+    it('should delete all games with player', async function() {
+        // Create two games with the test user
+        const game1 = new Game();
+        game1.player1 = test_user._id;
+        await game1.save();
+
+        const game2 = new Game();
+        game2.player2 = test_user._id;
+        await game1.save();
+
+        // Delete
+        const res = await api_request
+                            .delete('/api/games')
+                            .expect(200);
+
+        // Check that they are deleted
+        const games = await Game.find();
+        games.should.eql([]);
+    });
+
+    it('should not delete games without player', async function() {
+        // Create two games with the test user
+        let game = new Game();
+        game.player1 = 'some_player';
+        await game.save();
+
+        const res = await api_request
+                            .delete('/api/games')
+                            .expect(200);
+
+        game = await Game.findById(game._id);
+        should.exist(game);
     });
 });

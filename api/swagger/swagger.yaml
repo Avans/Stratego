@@ -353,17 +353,18 @@ securityDefinitions:
 
 definitions:
   Error:
+    required: [message]
     properties:
       message:
         type: string
 
   Game:
-    type: object
     description: Informatie over een game
     example:
       id: 4F6tY
       opponent: Paul Wagener
       state: my_turn
+    required: [id, state]
     properties:
       id:
         type: string
