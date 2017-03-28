@@ -10,6 +10,6 @@ var Game = mongoose.model('Game');
  */
 describe('Game.outputForUser()', function() {
     it('should work', async function() {
-
+        // TODO
     });
 });

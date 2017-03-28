@@ -1,6 +1,6 @@
 'use strict';
 
-var SwaggerExpress = require('swagger-express-mw');
+var swagger = require('swagger-express-middleware');
 var express = require('express');
 var session = require('express-session');
 var YAML = require('yamljs');
@@ -18,43 +18,60 @@ require('./models/User');
 
 module.exports = app;
 
-var config = {
-  appRoot: __dirname,
-  swaggerSecurityHandlers: {
-    api: function (req, authOrSecDef, api_key, cb) {
-        if(!api_key) {
-            return req.res.status(403).json({message: 'Geef via de URL je api_key mee'})
-        }
-        mongoose.model('User').findOne({'api_key': api_key}, function(err, user) {
-            if(err || !user) {
-                return req.res.status(403).json({message: 'De API key "' + api_key + '" is niet bekend'})
-            }
-            // Log de user in
-            req.user = user;
-            return cb();
-        });
-    }
-  }
-};
-
 app.use(session({secret: 'secret', resave: true, saveUninitialized: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Authenticate the user
+app.use('/api', function(req, res, next) {
+    var api_key = req.query.api_key;
+
+    if(!api_key) {
+        return req.res.status(403).json({message: 'Geef via de URL je api_key mee'})
+    }
+    mongoose.model('User').findOne({'api_key': api_key}, function(err, user) {
+        if(err || !user) {
+            return req.res.status(403).json({message: 'De API key "' + api_key + '" is niet bekend'})
+        }
+        // Log de user in
+        req.user = user;
+        next();
+    });
+});
+
 app.use('/static', express.static('static'));
 
 require('./api_key')(app);
 
-SwaggerExpress.create(config, function(err, swaggerExpress) {
-  if (err) { throw err; }
+swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
+    if (err) { throw err; }
+    app.use(
+        swagger.metadata(),
+        swagger.CORS(),
+        swagger.files(),
+        swagger.parseRequest(),
+        swagger.validateRequest()
+    );
 
-  // install middleware
-  swaggerExpress.register(app);
 
-  // API documentatie
-  var swaggerUi = require('swagger-ui-express');
-  app.use('/', swaggerUi.serve, swaggerUi.setup(YAML.load('./api/swagger/swagger.yaml')));
+    var games = require('./api/controllers/games');
+    app.get('/api/games', games.get);
+    app.post('/api/games', games.post);
 
-  app.listen(process.env.PORT || 3000);
+    // install middleware
+    //swaggerExpress.register(app);
+
+    // API documentatie
+    var swaggerUi = require('swagger-ui-express');
+    app.use('/', swaggerUi.serve, swaggerUi.setup(YAML.load('./api/swagger/swagger.yaml')));
+
+    // Show errors
+    app.use(function(err, req, res, next) {
+        res.status(err.status);
+        res.json({message: err.message});
+        console.log(err);
+    });
+
+    app.listen(process.env.PORT || 3000);
 });

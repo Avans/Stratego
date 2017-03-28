@@ -17,7 +17,7 @@
     "passport": "^0.3.2",
     "passport-avans": "^0.1.0",
     "randomstring": "^1.1.5",
-    "swagger-express-mw": "^0.1.0",
+    "swagger-express-middleware": "^1.0.0-alpha.12",
     "swagger-ui-express": "^1.0.5",
     "yamljs": "^0.2.8"
   },

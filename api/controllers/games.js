@@ -5,8 +5,8 @@ var User = mongoose.model('User');
 var Game = mongoose.model('Game');
 
 module.exports = {
-  get: getGames,
-  post: postGames
+    get: getGames,
+    post: postGames
 };
 
 /**
@@ -20,13 +20,14 @@ function getGames(req, res) {
     })();
 }
 
+/**
+ * Create a new game
+ */
 function postGames(req, res) {
     return (async () => {
 
-        var body = req.swagger.params.ai.value;
-
         let game;
-        if(body.ai === true) {
+        if(req.body.ai === true) {
             // Set up a game versus the AI
             game = new Game();
             game.player1 = req.user;

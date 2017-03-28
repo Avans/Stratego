@@ -121,10 +121,15 @@ describe('GET /api/games', function() {
  */
 describe('POST /api/games', function() {
     it('should validate the input', async function() {
+        const log = console.log;
+        console.log = () => {}
+
         await api_request
                 .post('/api/games')
                 .send('{}')
                 .expect(400);
+
+        console.log = log;
     });
 
     it('should create a new game', async function() {
