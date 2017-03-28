@@ -189,7 +189,9 @@ paths:
           in: body
           description: Geeft aan of je een game wil tegen de computer of tegen iemand anders
           schema:
-            type: boolean
+            properties:
+              ai:
+                type: boolean
           required: true
       security:
         - api: []

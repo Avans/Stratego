@@ -25,7 +25,6 @@ var gameSchema = new mongoose.Schema({
   _id: { type: String, required: true, index: true, unique: true, default: () => randomstring.generate(5) },
   player1: { type: String, required: true, ref: 'User'},
   player2: { type: String, ref: 'User'},
-  is_vs_ai: {type: Boolean},
   winner: { type: String, ref: 'User'},
   state: { type: String, required: true, default: 'waiting_for_an_opponent', enum: [
         'waiting_for_an_opponent',
@@ -43,14 +42,38 @@ var gameSchema = new mongoose.Schema({
     validate: [validateBoard, "{PATH} is not a valid board"],
     default: undefined
   },
-  actions: {type: [actionSchema], default: []}
+  actions: {type: [actionSchema]}
 });
+
+gameSchema.statics.STATE = {
+  WAITING_FOR_AN_OPPONENT: 'waiting_for_an_opponent',
+  WAITING_FOR_PIECES: 'waiting_for_pieces',
+  STARTED: 'started',
+  GAME_OVER: 'game_over'
+}
 
 /**
  * Find games involving a User
  */
 gameSchema.query.findWithUser = function(user) {
     return this.find({$or: [{player1: user}, {player2: user}]});
+};
+
+gameSchema.methods.setState = function(state) {
+  this.state = state;
+  // TODO: emit with sockets
+}
+
+/**
+ *
+ */
+gameSchema.methods.outputForUser = function(user) {
+    const returnValue = {};
+
+    returnValue.id = this._id;
+
+
+    return returnValue;
 };
 
 function validateBoard() {

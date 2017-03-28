@@ -27,7 +27,7 @@ var api_request = function() {
             return apify_request(request.get(apify_url(url)));
         },
         post: function(url) {
-            return apify_request(request.post(apify_url(url)));
+            return apify_request(request.post(apify_url(url)).type('json'));
         },
         delete: function(url) {
             return apify_request(request.delete(apify_url(url)));
@@ -63,7 +63,7 @@ describe('api_key checks', function() {
         });
     });
 
-    it('should give an error when the api_key is unknown', async function() {
+    it('should give an error when the api_key is not corresponding to any user', async function() {
         const res = await request.get(SOME_API + '?api_key=nonexistingapikey').expect(403);
 
         res.body.should.eql({
@@ -74,25 +74,93 @@ describe('api_key checks', function() {
 
 describe('GET /api/games', function() {
 
-    it('should return no games', async function() {
+    it('should return no games with empty database', async function() {
         const res = await api_request.get('/api/games').expect(200);
 
         res.body.should.eql([]);
       });
 
-    it('should return a game as player 1', async function() {
+    it('should return a game with the user as player 1', async function() {
         let game = new Game();
-        game._id = TEST_GAME_ID;
         game.player1 = test_user._id;
         game = await game.save()
 
         const res = await api_request.get('/api/games').expect(200);
 
-        /*res.body.should.eql([{
-            "id": "4F6tY",
-            "state": "waiting_for_opponent"
-        }]);*/
+        res.body.should.eql([game.outputForUser(test_user)]);
     });
 
+    it('should return a game with the user as player 2', async function() {
+        let game = new Game();
+        game.player1 = 'some_player';
+        game.player2 = test_user._id;
+        game = await game.save()
 
+        const res = await api_request.get('/api/games').expect(200);
+
+        res.body.should.eql([game.outputForUser(test_user)]);
+    });
+
+    it('shouldn\'t return games the user is not participating in', async function() {
+        let game = new Game();
+        game.player1 = 'some_player';
+        game.player2 = 'some_other_player'
+        game = await game.save()
+
+        const res = await api_request.get('/api/games').expect(200);
+
+        res.body.should.eql([]);
+    });
+});
+
+describe('POST /api/games', function() {
+    it('should create a new game', async function() {
+        const res = await api_request
+                            .post('/api/games')
+                            .send('{"ai": false}')
+                            .expect(201);
+
+        const game = await Game.findById(res.body.id);
+
+        // Test for correct output
+        res.body.should.eql(game.outputForUser(test_user));
+
+        // Test if the game is in a correct state
+        game.player1.should.eql(test_user._id);
+        should.not.exist(game.player2);
+        game.state.should.eql('waiting_for_an_opponent');
+    });
+
+    it('should create a new AI game', async function() {
+        const res = await api_request
+                            .post('/api/games')
+                            .send('{"ai": true}')
+                            .expect(201);
+
+        const game = await Game.findById(res.body.id);
+
+        game.player1.should.eql(test_user._id);
+        game.player2.should.eql('ai');
+        game.state.should.eql('waiting_for_pieces');
+    });
+
+    it('should join an existing game', async function() {
+
+        // Some other player is waiting in a game
+        let game = new Game();
+        game.player1 = 'some_waiting_player';
+        game.state = 'waiting_for_an_opponent';
+        await game.save();
+
+        // Join that game
+        const res = await api_request
+                            .post('/api/games')
+                            .send('{"ai": false}')
+                            .expect(201);
+
+        game = await Game.findById(res.body.id);
+
+        game.player2.should.eql(test_user._id);
+        game.state.should.eql('waiting_for_pieces');
+    });
 });
