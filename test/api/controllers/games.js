@@ -72,6 +72,9 @@ describe('api_key checks', function() {
     })
 });
 
+/**
+ * GET /api/games
+ */
 describe('GET /api/games', function() {
 
     it('should return no games with empty database', async function() {
@@ -113,7 +116,17 @@ describe('GET /api/games', function() {
     });
 });
 
+/**
+ * POST /api/games
+ */
 describe('POST /api/games', function() {
+    it('should validate the input', async function() {
+        await api_request
+                .post('/api/games')
+                .send('{}')
+                .expect(400);
+    });
+
     it('should create a new game', async function() {
         const res = await api_request
                             .post('/api/games')
