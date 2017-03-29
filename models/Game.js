@@ -1,5 +1,6 @@
-var mongoose = require('mongoose');
-var randomstring = require('randomstring');
+const mongoose = require('mongoose');
+const randomstring = require('randomstring');
+const HttpError = require('../helpers/HttpError');
 
 /**
  * Coordinate
@@ -66,7 +67,7 @@ gameSchema.statics.findByIdAndUser = async function(id, user) {
     var games = await this.find({_id: id}).findWithUser(user);
 
     if(games.length === 0) {
-        return null;
+        throw new HttpError(404, 'De game met het id "' + id + '" bestaat niet, of doe je niet aan mee.');
     } else {
         return games[0];
     }

@@ -2,17 +2,7 @@
 
 var mongoose = require('mongoose');
 var Game = mongoose.model('Game');
-
-/**
- * Allow Promise functions to be used as express handlers
- */
-function wrap_promise(async_function) {
-    return (req, res, next) => {
-        async_function(req, res).catch((err) => {
-            next(err);
-        });
-    }
-}
+var wrap_promise = require('../../helpers/wrap_promise');
 
 module.exports = {
     get: wrap_promise(getGames),
@@ -68,5 +58,6 @@ async function postGames(req, res) {
  */
 async function deleteGames(req, res) {
     await Game.find().findWithUser(req.user).remove();
+
     res.status(204).send('');
 }

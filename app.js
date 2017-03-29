@@ -71,7 +71,9 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     app.use(function(err, req, res, next) {
         res.status(err.status || 500);
         res.json({message: err.message});
-        console.error(err);
+        if(!err.status) {
+            console.error(err);
+        }
     });
 
     app.listen(process.env.PORT || 3000);
