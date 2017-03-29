@@ -122,15 +122,15 @@ describe('GET /api/games', function() {
 describe('POST /api/games', function() {
     it('should validate the input', async function() {
         // Temporarily silence the error that this gives
-        const log = console.log;
-        console.log = () => {}
+        const error = console.error;
+        console.error = () => {}
 
         await api_request
                 .post('/api/games')
                 .send('{}')
                 .expect(400);
 
-        console.log = log;
+        console.error = error;
     });
 
     it('should create a new game', async function() {
@@ -201,7 +201,7 @@ describe('DELETE /api/games', function() {
         // Delete
         const res = await api_request
                             .delete('/api/games')
-                            .expect(200);
+                            .expect(204);
 
         // Check that they are deleted
         const games = await Game.find();
@@ -216,7 +216,7 @@ describe('DELETE /api/games', function() {
 
         const res = await api_request
                             .delete('/api/games')
-                            .expect(200);
+                            .expect(204);
 
         game = await Game.findById(game._id);
         should.exist(game);
@@ -269,7 +269,7 @@ describe('DELETE /api/games/:id', function() {
 
         const res = await api_request
                             .delete('/api/games/' + game._id)
-                            .expect(200);
+                            .expect(204);
 
         should.not.exist(await Game.findById(game._id));
     });
@@ -280,3 +280,7 @@ describe('DELETE /api/games/:id', function() {
                             .expect(404);
     });
 });
+
+describe('POST /api/games/:id/start_board', function() {
+
+})
