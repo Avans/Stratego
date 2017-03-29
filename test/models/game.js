@@ -104,7 +104,53 @@ describe('Game.setUpStartBoard()', function() {
         game = await game.save();
     });
 
-    it('should only set up the board in the waiting_for_pieces state', async function() {
+    it('should accept a board and save it', async function() {
+        game.setUpStartBoard(test_user, board);
+        expect(game.player1_set_up_pieces).to.be.true;
+        expect(game.player2_set_up_pieces).to.be.false;
+        expect(game.state).to.equal(Game.STATE.WAITING_FOR_PIECES);
+
+        expect(JSON.stringify(game.board)).to.equal(JSON.stringify([
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+            ['1:7', '1:B', '1:5', '1:2', '1:9', '1:9', '1:1', '1:8', '1:9', '1:B'],
+            ['1:B', '1:7', '1:9', '1:S', '1:4', '1:5', '1:8', '1:5', '1:3', '1:9'],
+            ['1:7', '1:B', '1:4', '1:8', '1:6', '1:4', '1:3', '1:8', '1:7', '1:6'],
+            ['1:B', '1:F', '1:B', '1:5', '1:9', '1:6', '1:6', '1:9', '1:9', '1:8']]));
+    });
+
+    it('should accept a board as player 2 and save it', async function() {
+        game.player1 = 'someone_else';
+        game.player2 = test_user;
+
+        game.setUpStartBoard('someone_else', board);
+        game.setUpStartBoard(test_user, board);
+
+        expect(game.player2_set_up_pieces).to.be.true;
+
+        expect(JSON.stringify(game.board)).to.equal(JSON.stringify([
+            ['2:8', '2:9', '2:9', '2:6', '2:6', '2:9', '2:5', '2:B', '2:F', '2:B'],
+            ['2:6', '2:7', '2:8', '2:3', '2:4', '2:6', '2:8', '2:4', '2:B', '2:7'],
+            ['2:9', '2:3', '2:5', '2:8', '2:5', '2:4', '2:S', '2:9', '2:7', '2:B'],
+            ['2:B', '2:9', '2:8', '2:1', '2:9', '2:9', '2:2', '2:5', '2:B', '2:7'],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '  ],
+            [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '  ],
+            ['1:7', '1:B', '1:5', '1:2', '1:9', '1:9', '1:1', '1:8', '1:9', '1:B'],
+            ['1:B', '1:7', '1:9', '1:S', '1:4', '1:5', '1:8', '1:5', '1:3', '1:9'],
+            ['1:7', '1:B', '1:4', '1:8', '1:6', '1:4', '1:3', '1:8', '1:7', '1:6'],
+            ['1:B', '1:F', '1:B', '1:5', '1:9', '1:6', '1:6', '1:9', '1:9', '1:8']]));
+    });
+
+    it('should give an error if the user doesn\'t participate', async function() {
+        game.player1 = 'some_guy';
+        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+    });
+
+    it('should give an error if the game isn\'t in the state waiting_for_pieces', async function() {
         game.state = 'started';
         game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
 
@@ -112,4 +158,16 @@ describe('Game.setUpStartBoard()', function() {
         game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
     });
 
+    it('should give an error if the user already set up the board', async () => {
+        game.player1_set_up_pieces = true;
+        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+    });
+
+    it('should give an error if the user (as player 2) already set up the board', async () => {
+        game.player1 = 'someone_else';
+        game.player2 = test_user;
+        game.player1_set_up_pieces = false;
+        game.player2_set_up_pieces = true;
+        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+    });
 });

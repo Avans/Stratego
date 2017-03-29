@@ -49,10 +49,19 @@ var gameSchema = new mongoose.Schema({
     validate: [validateBoard, "{PATH} is not a valid board"],
     default: undefined
   },
-  current_board: {
+  board: {
     type: [[String]],
     validate: [validateBoard, "{PATH} is not a valid board"],
-    default: undefined
+    default: [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
   },
   actions: {type: [actionSchema]}
 });
@@ -154,8 +163,14 @@ gameSchema.statics.validateStartBoard = function(start_board) {
     }
 }
 
-gameSchema.statics.getRotatedBoard = function(board) {
-
+/**
+ * Get a rotated version of the board
+ */
+gameSchema.statics.getRotatedBoard = function(b) {
+    const board = JSON.parse(JSON.stringify(b)); // Copy array
+    board.map((v) => v.reverse());
+    board.reverse();
+    return board;
 }
 
 gameSchema.methods.isVsAI = function() {
@@ -168,9 +183,45 @@ gameSchema.methods.isVsAI = function() {
 gameSchema.methods.setUpStartBoard = function(user, start_board) {
     gameSchema.statics.validateStartBoard(start_board);
 
+    // User should be a part of this game
+    if(user !== this.player1 && user !== this.player2) {
+        throw new ValidationError('Only users that are participating in this game can set up a start board');
+    }
+
+    // Game should be in a state where the players are setting up the pieces
     if(this.state !== gameSchema.statics.STATE.WAITING_FOR_PIECES) {
         throw new ValidationError('The start board can only be added when the game is in the state waiting_for_pieces.');
     }
+
+
+    if((user === this.player1 && this.player1_set_up_pieces)
+        || (user === this.player2 && this.player2_set_up_pieces)) {
+        throw new ValidationError('The board has already been set up for user %s', user);
+    }
+
+
+    if(user === this.player1) {
+        // Add player1 pieces to the bottom of the board
+        this.board[6] = start_board[0].map((v) => '1:' + v);
+        this.board[7] = start_board[1].map((v) => '1:' + v);
+        this.board[8] = start_board[2].map((v) => '1:' + v);
+        this.board[9] = start_board[3].map((v) => '1:' + v);
+
+        this.player1_set_up_pieces = true;
+    } else {
+        // Add player2 pieces to the top of the board
+        let board = gameSchema.statics.getRotatedBoard(this.board);
+        board[6] = start_board[0].map((v) => '2:' + v);
+        board[7] = start_board[1].map((v) => '2:' + v);
+        board[8] = start_board[2].map((v) => '2:' + v);
+        board[9] = start_board[3].map((v) => '2:' + v);
+        board = gameSchema.statics.getRotatedBoard(board);
+
+        this.board = board;
+        this.player2_set_up_pieces = true;
+    }
+
+    //const board =
 }
 
 /**
