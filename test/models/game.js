@@ -5,6 +5,7 @@ var ValidationError = require('../../helpers/ValidationError');
 
 var mongoose = require('mongoose');
 var Game = mongoose.model('Game');
+var User = mongoose.model('User');
 
 
 /**
@@ -33,7 +34,6 @@ describe('Game.validateStartBoard()', function() {
     beforeEach(async function() {
         resetCorrectBoard();
     });
-
 
     it('should validate a correct start board', async function() {
         Game.validateStartBoard.bind(Game, board).should.not.throw(ValidationError);
@@ -74,6 +74,42 @@ describe('Game.validateStartBoard()', function() {
         board[0][1] = swap;
         Game.validateStartBoard.bind(Game, board).should.not.throw(ValidationError);
 
+    });
+});
+
+/**
+ * Test Game.setUpStartBoard()
+ */
+describe('Game.setUpStartBoard()', function() {
+    let test_user, game;
+    let board = [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
+                 ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],
+                 ['7', 'B', '4', '8', '6', '4', '3', '8', '7', '6'],
+                 ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
+
+    beforeEach(async () => {
+        await User.remove({});
+        await Game.remove({});
+
+        test_user = new User();
+        test_user._id = 'test_user_id';
+        test_user.api_key = 'a';
+        test_user.name = 'a';
+        test_user = await test_user.save();
+
+        game = new Game();
+        game.player1 = test_user;
+        game.player2 = 'someone_else';
+        game.state = 'waiting_for_pieces';
+        game = await game.save();
+    });
+
+    it('should only set up the board in the waiting_for_pieces state', async function() {
+        game.state = 'started';
+        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+
+        game.state = 'waiting_for_an_opponent';
+        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
     });
 
 });
