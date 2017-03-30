@@ -42,6 +42,7 @@ var gameSchema = new mongoose.Schema({
         'started',
         'game_over',
         ]},
+  player1_turn: {type: String, required: true, type: Boolean, default: true},
   player1_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
   player2_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
   start_board: {
@@ -173,6 +174,13 @@ gameSchema.statics.getRotatedBoard = function(b) {
     return board;
 }
 
+gameSchema.statics.getAIStartBoard = function() {
+    return [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
+            ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],
+            ['7', 'B', '4', '8', '6', '4', '3', '8', '7', '6'],
+            ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
+}
+
 gameSchema.methods.isVsAI = function() {
     return this.player2 === 'ai';
 }
@@ -180,11 +188,11 @@ gameSchema.methods.isVsAI = function() {
 /**
  * Add the start board
  */
-gameSchema.methods.setUpStartBoard = function(user, start_board) {
+gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
     gameSchema.statics.validateStartBoard(start_board);
 
     // User should be a part of this game
-    if(user !== this.player1 && user !== this.player2) {
+    if(user_id !== this.player1 && user_id !== this.player2) {
         throw new ValidationError('Only users that are participating in this game can set up a start board');
     }
 
@@ -194,13 +202,13 @@ gameSchema.methods.setUpStartBoard = function(user, start_board) {
     }
 
 
-    if((user === this.player1 && this.player1_set_up_pieces)
-        || (user === this.player2 && this.player2_set_up_pieces)) {
-        throw new ValidationError('The board has already been set up for user %s', user);
+    if(    (user_id === this.player1 && this.player1_set_up_pieces)
+        || (user_id === this.player2 && this.player2_set_up_pieces)) {
+        throw new ValidationError('The board has already been set up for user %s', user_id);
     }
 
 
-    if(user === this.player1) {
+    if(user_id === this.player1) {
         // Add player1 pieces to the bottom of the board
         this.board[6] = start_board[0].map((v) => '1:' + v);
         this.board[7] = start_board[1].map((v) => '1:' + v);
@@ -220,8 +228,6 @@ gameSchema.methods.setUpStartBoard = function(user, start_board) {
         this.board = board;
         this.player2_set_up_pieces = true;
     }
-
-    //const board =
 }
 
 /**

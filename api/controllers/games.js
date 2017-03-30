@@ -27,9 +27,12 @@ async function postGames(req, res) {
     if(req.body.ai === true) {
         // Set up a game versus the AI
         game = new Game();
-        game.player1 = req.user;
+        game.player1 = req.user._id;
         game.player2 = 'ai';
         game.setState(Game.STATE.WAITING_FOR_PIECES);
+
+        // The AI immediately puts down its pieces
+        game.setUpStartBoard('ai', Game.getAIStartBoard());
 
         game = await game.save();
     } else {
@@ -38,13 +41,13 @@ async function postGames(req, res) {
 
         if(game !== null) {
             // Join an existing match
-            game.player2 = req.user;
+            game.player2 = req.user._id;
             game.setState(Game.STATE.WAITING_FOR_PIECES);
             game = await game.save();
         } else {
             // Otherwise create a new game
             game = new Game();
-            game.player1 = req.user;
+            game.player1 = req.user._id;
             game.setState(Game.STATE.WAITING_FOR_AN_OPPONENT);
             game = await game.save();
         }

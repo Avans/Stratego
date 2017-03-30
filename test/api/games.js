@@ -39,8 +39,8 @@ var api_request = function() {
  * Ensure that the environment is the same by resetting the database for each test
  */
 beforeEach(async function() {
-    await User.remove({});
-    await Game.remove({});
+    await User.remove();
+    await Game.remove();
 
     test_user = new User();
     test_user._id = 'test_id';
@@ -160,6 +160,7 @@ describe('POST /api/games', function() {
 
         game.player1.should.eql(test_user._id);
         game.player2.should.eql('ai');
+        game.player2_set_up_pieces.should.be.true();
         game.state.should.eql('waiting_for_pieces');
     });
 
@@ -282,5 +283,46 @@ describe('DELETE /api/games/:id', function() {
 });
 
 describe('POST /api/games/:id/start_board', function() {
+    const board = [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
+                   ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],
+                   ['7', 'B', '4', '8', '6', '4', '3', '8', '7', '6'],
+                   ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
 
+    it('should still be waiting for pieces after the first board', async function() {
+        let game = new Game();
+        game.player1 = test_user;
+        game.state = Game.STATE.WAITING_FOR_PIECES;
+        game = await game.save();
+
+        const res = await api_request
+            .post('/api/games/' + game._id + '/start_board')
+            .send(board)
+            .expect(200);
+
+        // Check that the game is still waiting for (player 2) pieces
+        game = await Game.findById(game._id);
+        game.state.should.be.equal(Game.STATE.WAITING_FOR_PIECES);
+
+        // Should give the new game as output
+        res.body.should.eql(game.outputForUser(test_user));
+    });
+
+    //
+    it('should start playing if the other player has already set up his board', async function() {
+        let game = new Game();
+        game.player1 = test_user;
+        game.player2 = 'someone_else';
+        game.player2_set_up_pieces = true;
+        game.state = Game.STATE.WAITING_FOR_PIECES;
+        game = await game.save();
+
+        const res = await api_request
+            .post('/api/games/' + game._id + '/start_board')
+            .send(board)
+            .expect(200);
+
+        // Game should now have started
+        game = await Game.findById(game._id);
+        game.state.should.be.equal(Game.STATE.STARTED);
+    });
 })

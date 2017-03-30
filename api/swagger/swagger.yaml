@@ -7,7 +7,7 @@ info:
     email: p.wagener@avans.nl
   description: |
       ![](static/stratego.jpg)
-      
+
       Met deze API is het mogelijk om Stratego te spelen tegen je medestudenten, of tegen de computer (AI). Het is mogelijk om meerdere potjes tegelijk te spelen, elk tegen een andere tegenstander.
 
       ## API key
@@ -118,13 +118,13 @@ info:
 
       ## Actions
       In de API komt het begrip actions naar voren. Dit zijn alle acties die gebeuren tijdens een potje Stratego. Denk hierbij aan: een speelstuk verplaatsen, een speelstuk te zien krijgen van de tegenstander of een speelstuk verwijderen van het bord omdat die geslagen is.
-      
+
       Actions heb je alleen nodig als je voor de extra features gaat (animaties, bijhouden welke speelstukken van de vijand waar staan, historie laten zien). Ga je alleen voor de voldoende, dan hoef je alleen te weten hoe je een move doet en kan je alles hieronder negeren.
 
-      Alles wat er gebeurd tijdens een potje Stratego wordt bijgehouden in een lijst van actions. Je zou als je wil kunnen beginnen met het startbord (staat in het Game object), alle actions die er zijn er op uitvoeren en uitkomen bij hoe het huidige bord er uit ziet. 
-      
-      Er zijn drie soorten actions, te herkennen aan de property `'type'`: `'reveal_piece'`, `'remove_piece'` of `'move_piece'`. 
-      
+      Alles wat er gebeurd tijdens een potje Stratego wordt bijgehouden in een lijst van actions. Je zou als je wil kunnen beginnen met het startbord (staat in het Game object), alle actions die er zijn er op uitvoeren en uitkomen bij hoe het huidige bord er uit ziet.
+
+      Er zijn drie soorten actions, te herkennen aan de property `'type'`: `'reveal_piece'`, `'remove_piece'` of `'move_piece'`.
+
       Een action heeft ook altijd de property `'square'`, maar die betekent voor elk type net iets anders.
 
       ### Reveal
@@ -158,7 +158,7 @@ info:
       # Klik op 'Expand Operations' hieronder om de API te zien.
 
 
-host: localhost:3000
+host: strategoavans.herokuapp.com
 basePath: /api
 schemes:
   - http
@@ -284,9 +284,9 @@ paths:
     get:
       description: |
         Krijg een lijst van alle actions sinds het spel is begonnen, van zowel jezelf als van de tegenstander. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat.
-        
+
         Let op dat een move niet alleen een verplaatsing van een speelstuk hoeft te zijn. Lees het hoofdstuk 'Move' voor meer informatie hierover.
-        
+
         De moves zijn gesorteerd van minst recent naar meest recent. Deze API heb je alleen nodig als je voor de extra's gaat.
       parameters:
         - name: id
@@ -336,9 +336,9 @@ paths:
         200:
           description: |
             De verschuiving is uitgevoerd. In de output zie je de nieuwe state van de Game en alle acties die zijn uitgevoerd naar aanleiding van de verschuiving.
-            
+
             Bij een normale verschuiving is dit alleen de actie 'move_piece'. Als er een stuk geslagen wordt zijn dit opeenvolgend de acties:
-            
+
             - reveal_piece
             - remove_piece
             - move_piece
@@ -400,7 +400,7 @@ definitions:
         $ref: "#/definitions/Board"
       start_board:
         $ref: "#/definitions/Board"
-          
+
   StartBoard:
     type: array
     example:
@@ -481,7 +481,6 @@ definitions:
     description: Zie documentatie boven voor een beschrijving van alle speelstukken
     enum:
       - 'B'
-      - '10'
       - '9'
       - '8'
       - '7'
@@ -491,5 +490,6 @@ definitions:
       - '3'
       - '2'
       - '1'
+      - 'S'
       - 'F'
       - 'O'

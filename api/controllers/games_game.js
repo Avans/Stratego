@@ -36,7 +36,18 @@ async function deleteGame(req, res) {
  * Post a start board
  */
 async function postStartBoard(req, res) {
-    const game = await Game.findByIdAndUser(req.params.id, req.user);
+    let game = await Game.findByIdAndUser(req.params.id, req.user);
 
-    // TODO
+    // Set up the start board
+    game.setUpStartBoard(req.user._id, req.body);
+
+    // Start the game!
+    if(game.player1_set_up_pieces && game.player2_set_up_pieces) {
+        game.player1_turn = true;
+        game.setState(Game.STATE.STARTED);
+    }
+
+    game = await game.save();
+
+    res.json(game.outputForUser(game));
 }

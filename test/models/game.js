@@ -77,6 +77,13 @@ describe('Game.validateStartBoard()', function() {
     });
 });
 
+describe('Game.getAIStartBoard()', function() {
+    it('should return a valid start board', async function() {
+        const board = Game.getAIStartBoard();
+        Game.validateStartBoard(board);
+    });
+});
+
 /**
  * Test Game.setUpStartBoard()
  */
@@ -88,8 +95,8 @@ describe('Game.setUpStartBoard()', function() {
                  ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
 
     beforeEach(async () => {
-        await User.remove({});
-        await Game.remove({});
+        await User.remove();
+        await Game.remove();
 
         test_user = new User();
         test_user._id = 'test_user_id';
@@ -98,14 +105,14 @@ describe('Game.setUpStartBoard()', function() {
         test_user = await test_user.save();
 
         game = new Game();
-        game.player1 = test_user;
+        game.player1 = test_user._id;
         game.player2 = 'someone_else';
         game.state = 'waiting_for_pieces';
         game = await game.save();
     });
 
     it('should accept a board and save it', async function() {
-        game.setUpStartBoard(test_user, board);
+        game.setUpStartBoard(test_user._id, board);
         expect(game.player1_set_up_pieces).to.be.true;
         expect(game.player2_set_up_pieces).to.be.false;
         expect(game.state).to.equal(Game.STATE.WAITING_FOR_PIECES);
@@ -125,10 +132,10 @@ describe('Game.setUpStartBoard()', function() {
 
     it('should accept a board as player 2 and save it', async function() {
         game.player1 = 'someone_else';
-        game.player2 = test_user;
+        game.player2 = test_user._id;
 
         game.setUpStartBoard('someone_else', board);
-        game.setUpStartBoard(test_user, board);
+        game.setUpStartBoard(test_user._id, board);
 
         expect(game.player2_set_up_pieces).to.be.true;
 
@@ -147,20 +154,20 @@ describe('Game.setUpStartBoard()', function() {
 
     it('should give an error if the user doesn\'t participate', async function() {
         game.player1 = 'some_guy';
-        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+        game.setUpStartBoard.bind(game, test_user._id, board).should.throw(ValidationError);
     });
 
     it('should give an error if the game isn\'t in the state waiting_for_pieces', async function() {
         game.state = 'started';
-        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+        game.setUpStartBoard.bind(game, test_user._id, board).should.throw(ValidationError);
 
         game.state = 'waiting_for_an_opponent';
-        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+        game.setUpStartBoard.bind(game, test_user._id, board).should.throw(ValidationError);
     });
 
     it('should give an error if the user already set up the board', async () => {
         game.player1_set_up_pieces = true;
-        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+        game.setUpStartBoard.bind(game, test_user._id, board).should.throw(ValidationError);
     });
 
     it('should give an error if the user (as player 2) already set up the board', async () => {
@@ -168,6 +175,6 @@ describe('Game.setUpStartBoard()', function() {
         game.player2 = test_user;
         game.player1_set_up_pieces = false;
         game.player2_set_up_pieces = true;
-        game.setUpStartBoard.bind(game, test_user, board).should.throw(ValidationError);
+        game.setUpStartBoard.bind(game, test_user._id, board).should.throw(ValidationError);
     });
 });
