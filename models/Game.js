@@ -235,7 +235,7 @@ gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
 
 gameSchema.methods.getPieceType = function(x, y) {
     const value = this.board[y][x];
-    if(value == ' ') {
+    if(value === ' ') {
         return null;
     }
 
@@ -268,7 +268,7 @@ gameSchema.methods.isWater = function(x, y) {
  */
 gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
     const from = {column: from_x, row: from_y};
-    const to = {column: to_y, row: to_x};
+    const to = {column: to_x, row: to_y};
 
     // Check if coordinates are in bounds
     if(from_x < 0 || from_x > 9 || from_y < 0 || from_y > 9) {
@@ -313,9 +313,42 @@ gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
         throw new ValidationError(util.format('You can\'t move into %j, this is a water square', to));
     }
 
-    // Check if not moving into own piece
 
-    // Scout: Check if not jumping over water/other pieces
+    if(pieceType === PieceType.TYPES.SCOUT) {
+        // Check that the scout doesn't jump over water or other pieces
+        function checkSpaceIsFree(x, y) {
+            const space = {row: y, column: x};
+
+            if(this.isWater(x, y)) {
+                throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a water piece at %j', from, to, space));
+            }
+            const piece = this.getPieceType(x, y);
+            if(piece !== null) {
+                throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a %s at %j', from, to, piece, space));
+            }
+        }
+
+        if(from_y === to_y) {
+            // Horizontal check
+            const low_x = Math.min(from_x, to_x);
+            const high_x = Math.max(from_x, to_x);
+            for(let x = low_x + 1; x < high_x; x += 1) {
+                checkSpaceIsFree.bind(this)(x, to_y);
+            }
+        } else {
+            // Vertical check
+            const low_y = Math.min(from_y, to_y);
+            const high_y = Math.max(from_y, to_y);
+            for(let y = low_y + 1; y < high_y; y += 1) {
+                checkSpaceIsFree.bind(this)(to_x, y);
+            }
+        }
+    } else {
+        // Only allow 1 space movement
+        if(Math.abs((from_y - to_y) + (from_x - to_x)) !== 1) {
+            throw new ValidationError(util.format('Piece %s can only move 1 space, cannot move from %j to %j', pieceType, from, to));
+        }
+    }
 
     // Other: Check that move is at most 1 far
 }

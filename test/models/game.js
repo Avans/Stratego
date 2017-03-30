@@ -89,7 +89,7 @@ describe('Game.getAIStartBoard()', function() {
  */
 describe('Game.checkValidMove()', function() {
     const game = new Game();
-    game.board = [['1:5', '1:7', ' ',   '1:9', ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+    game.board = [['1:5', '1:7', ' ',   '1:9', ' ',   ' ',   '2:1', ' ',   ' ',   ' '],
                   ['2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
@@ -104,7 +104,7 @@ describe('Game.checkValidMove()', function() {
         game.checkValidMove(1, 0, 2, 0); // 7 moving right
         game.checkValidMove(0, 0, 0, 1); // 5 attacking 6
         game.checkValidMove(3, 0, 3, 2); // Scout (9) moving two down
-        game.checkValidMove(3, 0, 9, 0); // Scout (9) moving all the way to the right
+        game.checkValidMove(3, 0, 6, 0); // Scout (9) attacking 1 to the right
     });
 
     it('should not accept coordinates outside the game grid', async function() {
@@ -148,6 +148,16 @@ describe('Game.checkValidMove()', function() {
     it('should give an error when trying to move into water', async function() {
         game.checkValidMove.bind(game, 5, 4, 6, 4).should.throw(ValidationError);
         game.checkValidMove.bind(game, 7, 6, 7, 5).should.throw(ValidationError);
+    });
+
+    it('should give an error if the scout tries to move over water/other pieces', async function() {
+        game.checkValidMove.bind(game, 3, 0, 3, 9).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 3, 0, 9, 0).should.throw(ValidationError);
+    });
+
+    it('should give an error when trying to move a piece further than 1 space', async function() {
+        game.checkValidMove.bind(game, 9, 9, 9, 7).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 7, 0, 9, 0).should.throw(ValidationError);
     });
 });
 
