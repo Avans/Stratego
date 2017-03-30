@@ -85,6 +85,35 @@ describe('Game.getAIStartBoard()', function() {
 });
 
 /**
+ * Test Game.checkValidMove()
+ */
+describe('Game.checkValidMove()', function() {
+    const game = new Game();
+    game.board = [['1:5', '1:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  ['2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '2:8']];
+
+    it('should not accept coordinates outside the game grid', async function() {
+        game.checkValidMove.bind(game, -1, 0, 0, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 0, -1, 0, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 10, 9, 9).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 10, 9, 9, 9).should.throw(ValidationError);
+
+        game.checkValidMove.bind(game, 0, 0, 0, -1).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 0, 0, -1, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 9, 10, 9).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 9, 9, 10).should.throw(ValidationError);
+    });
+});
+
+/**
  * Test Game.setUpStartBoard()
  */
 describe('Game.setUpStartBoard()', function() {

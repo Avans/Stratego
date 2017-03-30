@@ -233,6 +233,47 @@ gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
     }
 }
 
+gameSchema.methods.getPieceType = function(x, y) {
+    const value = this.board[y][x];
+    if(value == ' ') {
+        return null;
+    }
+
+    return PieceType.getByCode(value[2]);
+}
+
+/**
+ * Check if the move is valid in Stratego
+ */
+gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
+    // Check if coordinates are in bounds
+    if(from_x < 0 || from_x > 9 || from_y < 0 || from_y > 9) {
+        throw new ValidationError(util.format('The square_from coordinates (%d,%d) are not within the game grid', from_x, from_y));
+    }
+
+    if(to_x < 0 || to_x > 9 || to_y < 0 || to_y > 9) {
+        throw new ValidationError(util.format('The square_to coordinates (%d,%d) are not within the game grid', to_x, to_y));
+    }
+
+    // Check if there IS a piece at the coordinate
+
+    // Check if coordinate from/to are different
+
+    // Check if piece is immobile
+
+    // Check if not moving into own pieces
+
+    // Check if move is not diagonal
+
+    // Check if not moving into water
+
+    // Check if not moving into own piece
+
+    // Scout: Check if not jumping over water/other pieces
+
+    // Other: Check that move is at most 1 far
+}
+
 /**
  *
  */

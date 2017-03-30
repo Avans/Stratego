@@ -307,7 +307,6 @@ describe('POST /api/games/:id/start_board', function() {
         res.body.should.eql(game.outputForUser(test_user));
     });
 
-    //
     it('should start playing if the other player has already set up his board', async function() {
         let game = new Game();
         game.player1 = test_user;
