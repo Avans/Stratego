@@ -242,30 +242,76 @@ gameSchema.methods.getPieceType = function(x, y) {
     return PieceType.getByCode(value[2]);
 }
 
+gameSchema.methods.getPlayerNumberOfPiece = function(x, y) {
+    const value = this.board[y][x];
+    if(value == ' ') {
+        return null;
+    }
+
+    if(value[0] === '1') {
+        return 1;
+    }
+    if(value[0] === '2') {
+        return 2;
+    }
+}
+
+/**
+ * Check if a coordinate is water
+ */
+gameSchema.methods.isWater = function(x, y) {
+    return (y == 4 || y == 5) && (x == 2 || x == 3 || x == 6 || x == 7);
+}
+
 /**
  * Check if the move is valid in Stratego
  */
 gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
+    const from = {column: from_x, row: from_y};
+    const to = {column: to_y, row: to_x};
+
     // Check if coordinates are in bounds
     if(from_x < 0 || from_x > 9 || from_y < 0 || from_y > 9) {
-        throw new ValidationError(util.format('The square_from coordinates (%d,%d) are not within the game grid', from_x, from_y));
+        throw new ValidationError(util.format('The square_from coordinates %j are not within the game grid', from));
     }
 
     if(to_x < 0 || to_x > 9 || to_y < 0 || to_y > 9) {
-        throw new ValidationError(util.format('The square_to coordinates (%d,%d) are not within the game grid', to_x, to_y));
+        throw new ValidationError(util.format('The square_to coordinates %j are not within the game grid', to));
     }
 
     // Check if there IS a piece at the coordinate
+    const pieceType = this.getPieceType(from_x, from_y);
+    if(pieceType === null) {
+        throw new ValidationError(util.format('There is no piece present at coordinate %j', from));
+    }
 
     // Check if coordinate from/to are different
+    if(from_x === to_x && from_y === to_y) {
+        throw new ValidationError(util.format('The square_from coordinate %j can not be the same as the square_to coordinate %j', from, to));
+    }
 
     // Check if piece is immobile
+    if(pieceType === PieceType.TYPES.BOMB
+        || pieceType === PieceType.TYPES.FLAG) {
+        throw new ValidationError(util.format('The %s piece at %j cannot move', pieceType, from));
+    }
 
     // Check if not moving into own pieces
+    const playerFrom = this.getPlayerNumberOfPiece(from_x, from_y);
+    const playerTo = this.getPlayerNumberOfPiece(to_x, to_y);
+    if(playerFrom !== ' ' && playerFrom == playerTo) {
+        throw new ValidationError(util.format('There already is a piece you control at %j', to));
+    }
 
     // Check if move is not diagonal
+    if(from_x !== to_x && from_y !== to_y) {
+        throw new ValidationError(util.format('From %j to %j is a diagonal move, this is not allowed', from, to));
+    }
 
     // Check if not moving into water
+    if(this.isWater(to_x, to_y)) {
+        throw new ValidationError(util.format('You can\'t move into %j, this is a water square', to));
+    }
 
     // Check if not moving into own piece
 

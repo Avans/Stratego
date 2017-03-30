@@ -89,16 +89,23 @@ describe('Game.getAIStartBoard()', function() {
  */
 describe('Game.checkValidMove()', function() {
     const game = new Game();
-    game.board = [['1:5', '1:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+    game.board = [['1:5', '1:7', ' ',   '1:9', ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                   ['2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   '2:3', ' ',   ' ',   ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '1:5', ' ',   ' '],
                   [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '2:8']];
+                  [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '2:3'],
+                  ['1:F', '2:B', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '2:8']];
+
+    it('should accept valid moves', async function() {
+        game.checkValidMove(1, 0, 2, 0); // 7 moving right
+        game.checkValidMove(0, 0, 0, 1); // 5 attacking 6
+        game.checkValidMove(3, 0, 3, 2); // Scout (9) moving two down
+        game.checkValidMove(3, 0, 9, 0); // Scout (9) moving all the way to the right
+    });
 
     it('should not accept coordinates outside the game grid', async function() {
         game.checkValidMove.bind(game, -1, 0, 0, 0).should.throw(ValidationError);
@@ -110,6 +117,37 @@ describe('Game.checkValidMove()', function() {
         game.checkValidMove.bind(game, 0, 0, -1, 0).should.throw(ValidationError);
         game.checkValidMove.bind(game, 9, 9, 10, 9).should.throw(ValidationError);
         game.checkValidMove.bind(game, 9, 9, 9, 10).should.throw(ValidationError);
+    });
+
+    it('should not be able to move an empty space', async function() {
+        game.checkValidMove.bind(game, 5, 5, 5, 6).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 3, 6, 4, 6).should.throw(ValidationError);
+    });
+
+    it('should check that from/to coordinates differ', async function() {
+        game.checkValidMove.bind(game, 0, 0, 0, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 3, 0, 3, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 9, 9, 9).should.throw(ValidationError);
+    });
+
+    it('should give an error for moving bomb and flag pieces', async function() {
+        game.checkValidMove.bind(game, 0, 9, 0, 8).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 1, 9, 1, 8).should.throw(ValidationError);
+    });
+
+    it('should give an error for moving into your own pieces', async function() {
+        game.checkValidMove.bind(game, 0, 0, 1, 0).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 9, 9, 8).should.throw(ValidationError);
+    });
+
+    it('should give an error for diagonal moves', async function() {
+        game.checkValidMove.bind(game, 1, 0, 2, 1).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 9, 8, 8, 7).should.throw(ValidationError);
+    });
+
+    it('should give an error when trying to move into water', async function() {
+        game.checkValidMove.bind(game, 5, 4, 6, 4).should.throw(ValidationError);
+        game.checkValidMove.bind(game, 7, 6, 7, 5).should.throw(ValidationError);
     });
 });
 
