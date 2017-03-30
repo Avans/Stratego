@@ -214,6 +214,7 @@ gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
         this.board[7] = start_board[1].map((v) => '1:' + v);
         this.board[8] = start_board[2].map((v) => '1:' + v);
         this.board[9] = start_board[3].map((v) => '1:' + v);
+        this.markModified('board');
 
         this.player1_set_up_pieces = true;
     } else {
@@ -226,6 +227,8 @@ gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
         board = gameSchema.statics.getRotatedBoard(board);
 
         this.board = board;
+        this.markModified('board');
+
         this.player2_set_up_pieces = true;
     }
 }

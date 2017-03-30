@@ -44,6 +44,7 @@ async function postStartBoard(req, res) {
     // Start the game!
     if(game.player1_set_up_pieces && game.player2_set_up_pieces) {
         game.player1_turn = true;
+        game.start_board = game.board;
         game.setState(Game.STATE.STARTED);
     }
 

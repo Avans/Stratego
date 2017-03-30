@@ -324,5 +324,6 @@ describe('POST /api/games/:id/start_board', function() {
         // Game should now have started
         game = await Game.findById(game._id);
         game.state.should.be.equal(Game.STATE.STARTED);
+        JSON.stringify(game.start_board).should.equal(JSON.stringify(game.board));
     });
 })
