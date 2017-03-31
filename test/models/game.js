@@ -183,21 +183,92 @@ describe('Game.doMove()', function() {
     });
 
     it('should execute a valid player 1 move', async function() {
-        game.doMove('test_user', 0, 0, 0, 1);
+        const actions = game.doMove('test_user', 0, 0, 0, 1);
+
         // Expect correct actions returned
+        actions.length.should.equal(1);
+        expect(actions).to.deep.equal([{
+            type: 'move_piece',
+            square: { column: 0, row: 0 },
+            square_to: { column: 0, row: 1 }
+        }]);
 
         // Expect actions to be added to history
+        game.actions.length.should.equal(1);
 
         // Expect move on the board to be completed
+        game.board[0][0].should.equal(' ');
+        game.board[1][0].should.equal('1:4');
+
+        // Expect player 2 to have the turn
+        game.player1s_turn.should.be.false();
     });
-    it('should execute valid player2 move', async function() {
+
+    it('should execute a valid player 2 move', async function() {
         game.player1s_turn = false;
+
         game.doMove('someone_else', 1, 0, 1, 1);
+
+        game.board[0][1].should.equal(' ');
+        game.board[1][1].should.equal('2:6');
+
+        game.player1s_turn.should.be.true();
     });
 
     // should execute an attack
+    it('should execute an attack', async function() {
+        const actions = game.doMove('test_user', 0, 0, 1, 0); // Attack the 2:6 piece and win
+
+        game.board[0][0].should.equal(' ');
+        game.board[0][1].should.equal('1:4');
+
+        expect(actions).to.deep.equal([
+            { type: 'reveal_piece',
+              square: {row: 0, column: 0},
+              piece: '4'
+            },
+            { type: 'reveal_piece',
+              square: {row: 0, column: 1},
+              piece: '6'
+            },
+            { type: 'destroy_piece',
+              square: {row: 0, column: 1}
+            },
+            { type: 'move_piece',
+              square: {row: 0, column: 0},
+              square_to: {row: 0, column: 1}
+            }
+        ]);
+    });
+
+    it('should destroy both pieces if they are equal', async function() {
+        game.board[0][0] = '1:6';
+        const actions = game.doMove('test_user', 0, 0, 1, 0);
+
+        game.board[0][0].should.equal(' ');
+        game.board[0][1].should.equal(' ');
+
+        actions.length.should.equal(5); // One extra destroy_piece
+    });
+
+    it('should destroy the moving piece if it loses', async function() {
+        game.board[0][0] = '1:9';
+
+        game.doMove('test_user', 0, 0, 1, 0);
+
+        game.board[0][0].should.equal(' ');
+        game.board[0][1].should.equal('2:6');
+    });
 
     // should finish the game when the flag is captured
+    it('should finish the game when the flag is captured', async function() {
+        game.board[0][1] = '2:F';
+
+        game.doMove('test_user', 0, 0, 1, 0);
+
+        game.winner.should.equal('test_user');
+        game.state.should.equal(Game.STATE.GAME_OVER);
+    });
 
     it('should not allow a third user to do a move', async function() {
         game.doMove.bind(game, 'third_person', 0, 0, 0, 1).should.throw(ValidationError);

@@ -6,27 +6,8 @@ const HttpError = require('../helpers/HttpError');
 const ValidationError = require('../helpers/ValidationError');
 const PieceType = require('./PieceType');
 
-
-/**
- * Coordinate
- */
-
-var coordinateSchema = new mongoose.Schema({
-    row: {type: Number, min: 0, max: 9, required: true},
-    column: {type: Number, min: 0, max: 9, required: true}
-});
-
-function Piece() {
-
-}
-
-/**
- * Action
- */
-var actionSchema = new mongoose.Schema({
-    type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
-    square: {type: coordinateSchema, required: true}
-});
+const coordinateType = { row: {type: Number, min: 0, max: 9, required: true},
+                         column: {type: Number, min: 0, max: 9, required: true} };
 
 /**
  * Game
@@ -64,7 +45,13 @@ var gameSchema = new mongoose.Schema({
               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
   },
-  actions: {type: [actionSchema]}
+  actions: {type: [
+        {
+            type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
+            square: {type: coordinateType, required: true},
+            square_to: {type: coordinateType},
+        }
+    ]}
 });
 
 gameSchema.statics.STATE = {
@@ -376,6 +363,7 @@ gameSchema.methods.getPlayerTurn = function() {
  */
 gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     const from = {column: from_x, row: from_y};
+    const to = {column: to_x, row: to_y};
 
     // Check if the user participates in this game
     const playerNumber = this.getPlayerNumber(user);
@@ -409,11 +397,73 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         throw new ValidationError(util.format('The piece at %j cannot be moved by %s, it is controlled by the other user', from, user));
     }
 
+    const actions = [];
+
+    let move = true;
+
     // Do a battle (if landing on opponent piece)
+    const pieceTypeMoving = this.getPieceType(from_x, from_y);
+    const pieceTypeAtTarget = this.getPieceType(to_x, to_y);
+    if(pieceTypeAtTarget !== null) {
+
+        // Reveal the pieces
+        actions.push({
+            type: 'reveal_piece',
+            square: from,
+            piece: pieceTypeMoving.code
+        });
+        actions.push({
+            type: 'reveal_piece',
+            square: to,
+            piece: pieceTypeAtTarget.code
+        });
+
+        // Destroy target piece
+        if(pieceTypeMoving.canBeat(pieceTypeAtTarget)) {
+            actions.push({
+                type: 'destroy_piece',
+                square: to
+            });
+            this.board[to_y][to_x] = ' ';
+        }
+
+        // Destroy moving piece if it loses (or draws)
+        if(pieceTypeAtTarget.canBeat(pieceTypeMoving)) {
+            actions.push({
+                type: 'destroy_piece',
+                square: from
+            });
+            this.board[from_y][from_x] = ' ';
+            move = false;
+        }
+    }
 
     // Do the move
+    if(move) {
+        this.board[to_y][to_x] = this.board[from_y][from_x];
+        this.board[from_y][from_x] = ' ';
+    }
+    actions.push({
+        type: 'move_piece',
+        square: from,
+        square_to: to
+    });
 
     // Change the turn
+    this.player1s_turn = !this.player1s_turn;
+
+    // If the flag is captured the game is over
+    if(pieceTypeAtTarget === PieceType.TYPES.FLAG) {
+        this.winner = (playerNumber == 1) ? this.player1 : this.player2;
+        this.state = gameSchema.statics.STATE.GAME_OVER;
+    }
+
+    // Save actions to history
+    for(let i = 0; i < actions.length; i += 1) {
+        this.actions.push(actions[i]);
+    }
+
+    return actions;
 }
 
 /**
@@ -434,5 +484,4 @@ function validateBoard() {
 }
 
 mongoose.model('Game', gameSchema);
-mongoose.model('Action', actionSchema);
-mongoose.model('Coordinate', coordinateSchema);
+
