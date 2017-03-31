@@ -353,6 +353,69 @@ gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
     // Other: Check that move is at most 1 far
 }
 
+gameSchema.methods.getPlayerNumber = function(user) {
+    if(user === this.player1) {
+        return 1;
+    }
+    if(user === this.player2) {
+        return 2;
+    }
+    return null;
+}
+
+gameSchema.methods.getPlayerTurn = function() {
+    if(this.player1s_turn) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+/**
+ * Execute a move on the board
+ */
+gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
+    const from = {column: from_x, row: from_y};
+
+    // Check if the user participates in this game
+    const playerNumber = this.getPlayerNumber(user);
+    if(playerNumber === null) {
+        throw new ValidationError(util.format('User %s does not participate in this game and thus cannot do a move', user));
+    }
+
+    // Game should be started
+    switch(this.state) {
+        case gameSchema.statics.STATE.STARTED:
+            // This is good
+            break;
+
+        case gameSchema.statics.STATE.GAME_OVER:
+            throw new ValidationError('Cannot do a move, the game is already finished');
+
+        default:
+            throw new ValidationError('Cannot do a move, the game hasn\'t started yet');
+    }
+
+    // Check if the user has the turn
+    if(playerNumber !== this.getPlayerTurn()) {
+        throw new ValidationError('Cannot do a move, it is not your turn');
+    }
+
+    // Validate the move
+    this.checkValidMove(from_x, from_y, to_x, to_y);
+
+    // Check if the piece belongs to the user
+    if(this.getPlayerNumberOfPiece(from_x, from_y) !== playerNumber) {
+        throw new ValidationError(util.format('The piece at %j cannot be moved by %s, it is controlled by the other user', from, user));
+    }
+
+    // Do a battle (if landing on opponent piece)
+
+    // Do the move
+
+    // Change the turn
+}
+
 /**
  *
  */

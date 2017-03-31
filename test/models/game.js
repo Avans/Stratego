@@ -161,6 +161,77 @@ describe('Game.checkValidMove()', function() {
     });
 });
 
+describe('Game.doMove()', function() {
+    let game;
+
+    beforeEach(async function() {
+        game = new Game();
+        game.player1 = 'test_user';
+        game.player2 = 'someone_else';
+        game.board = [['1:4', '2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']];
+        game.player1s_turn = true;
+        game.state = Game.STATE.STARTED;
+    });
+
+    it('should execute a valid player 1 move', async function() {
+        game.doMove('test_user', 0, 0, 0, 1);
+        // Expect correct actions returned
+
+        // Expect actions to be added to history
+
+        // Expect move on the board to be completed
+    });
+    it('should execute valid player2 move', async function() {
+        game.player1s_turn = false;
+        game.doMove('someone_else', 1, 0, 1, 1);
+    });
+
+    // should execute an attack
+
+    // should finish the game when the flag is captured
+
+    it('should not allow a third user to do a move', async function() {
+        game.doMove.bind(game, 'third_person', 0, 0, 0, 1).should.throw(ValidationError);
+    });
+
+    it('should only allow a move if the game is started', async function() {
+        game.state = Game.STATE.GAME_OVER;
+        game.doMove.bind(game, 'test_user', 0, 0, 0, 1).should.throw(ValidationError);
+
+        game.state = Game.STATE.WAITING_FOR_PIECES;
+        game.doMove.bind(game, 'test_user', 0, 0, 0, 1).should.throw(ValidationError);
+    });
+
+    it('should only allow a move if the user has the turn', async function() {
+        game.doMove.bind(game, 'someone_else', 1, 0, 1, 1).should.throw(ValidationError);
+
+        game.player1s_turn = false;
+        game.doMove.bind(game, 'test_user', 0, 0, 0, 1).should.throw(ValidationError);
+    });
+
+    it('should not allow invalid moves', async function() {
+        game.doMove.bind(game, 'test_user', 0, 0, 0, 2).should.throw(ValidationError);
+    });
+
+    it('should not allow moving an opponents piece', async function() {
+        game.doMove.bind(game, 'test_user', 1, 0, 1, 1).should.throw(ValidationError);
+
+        game.player1s_turn = false;
+        game.doMove.bind(game, 'someone_else', 0, 0, 0, 1).should.throw(ValidationError);
+
+    });
+
+});
+
 /**
  * Test Game.setUpStartBoard()
  */
