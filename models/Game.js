@@ -375,6 +375,47 @@ gameSchema.methods.getPlayerTurn = function() {
 }
 
 /**
+ * Get a move for the AI to do
+ */
+gameSchema.methods.getAIMove = function() {
+    // Check that match is against AI
+
+    const valid_moves = [];
+
+    function checkMoveTo(from_x, from_y, to_x, to_y) {
+        try {
+            this.checkValidMove(from_x, from_y, to_x, to_y);
+            valid_moves.push({
+                square: {row: from_y, column: from_x},
+                square_to: {row: to_y, column: to_x}
+            });
+        } catch(e) { // Ignore that move
+        }
+    }
+
+    // Go through all pieces of the AI
+    for(let x = 0; x < 10; x += 1) {
+        for(let y = 0; y < 10; y += 1) {
+
+            if(this.getPlayerNumberOfPiece(x, y) === 2) {
+                // Check if we can move to the surrounding squares
+                checkMoveTo.bind(this)(x, y, x + 1, y);
+                checkMoveTo.bind(this)(x, y, x - 1, y);
+                checkMoveTo.bind(this)(x, y, x, y + 1);
+                checkMoveTo.bind(this)(x, y, x, y - 1);
+            }
+        }
+    }
+
+    if(valid_moves.length === 0) {
+        return null;
+    }
+
+    const random_move = valid_moves[Math.floor(Math.random() * valid_moves.length)];
+    return random_move;
+}
+
+/**
  * Execute a move on the board
  */
 gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {

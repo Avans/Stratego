@@ -400,5 +400,5 @@ describe('POST /api/games/:id/actions', function() {
         ]);
     });
 
-    // Should do AI move
+    // TODO: Should do AI move
 });

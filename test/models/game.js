@@ -161,6 +161,37 @@ describe('Game.checkValidMove()', function() {
     });
 });
 
+describe('Game.getAIMove()', function() {
+    let game;
+    beforeEach(async function() {
+        game = new Game();
+        game.player1 = 'test_user';
+        game.player2 = 'ai';
+        game.board = [['1:4', '2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']];
+        game.state = Game.STATE.STARTED;
+    });
+
+    it('should give a valid move for the AI', async function() {
+        const move = game.getAIMove();
+        move.square.should.eql({row: 0, column: 1});
+    });
+
+    it('should return null if there are no valid moves', async function() {
+        game.board[0][1] = '2:F';
+        const move = game.getAIMove();
+        (move === null).should.eql(true); // This is weird, other ways don't fail on undefined
+    });
+});
+
 describe('Game.doMove()', function() {
     let game;
 
