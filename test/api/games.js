@@ -1,4 +1,5 @@
 var should = require('should');
+var expect = require('chai').expect;
 var server = require('../../app');
 var request = require('supertest')(server);
 
@@ -325,4 +326,79 @@ describe('POST /api/games/:id/start_board', function() {
         game.state.should.be.equal(Game.STATE.STARTED);
         JSON.stringify(game.start_board).should.equal(JSON.stringify(game.board));
     });
-})
+});
+
+describe('POST /api/games/:id/actions', function() {
+    let game;
+
+    beforeEach(async function() {
+        game = new Game();
+        game.player1 = test_user._id;
+        game.player2 = 'someone_else';
+        game.board = [['1:4', ' ',   '2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']];
+        game.state = Game.STATE.STARTED;
+        game.player1s_turn = true;
+        await game.save();
+    });
+
+    it('should perform and save a move on the board', async function() {
+        const res = await api_request
+            .post('/api/games/' + game._id + '/actions')
+            .send({
+                square: {row: 0, column: 0},
+                square_to: {row: 1, column: 0},
+            })
+            .expect(200);
+
+        // Expect the executed actions to be returned
+        expect(res.body.actions).to.deep.equal([
+            {
+                type: 'move_piece',
+                square: {column: 0, row: 0},
+                square_to: {column: 0, row: 1}
+            }
+        ]);
+        expect(res.body.game).to.deep.equal(game.outputForUser(test_user));
+
+        // Expect move to be saved
+        game = await Game.findById(game._id);
+        game.player1s_turn.should.be.false();
+        game.board[0][0].should.equal(' ');
+    });
+
+    it('should have rotated coordinates for player 2', async function() {
+        // Make the user player2
+        game.player1 = 'someone_else';
+        game.player2 = test_user._id;
+        game.player1s_turn = false;
+        game = await game.save();
+
+        const res = await api_request
+            .post('/api/games/' + game._id + '/actions')
+            .send({
+                square: {row: 0, column: 2},
+                square_to: {row: 1, column: 2},
+            })
+            .expect(200);
+
+        // Expect the actions to be from player2's perspective
+        expect(res.body.actions).to.deep.equal([
+            {
+                type: 'move_piece',
+                square: {column: 7, row: 9},
+                square_to: {column: 7, row: 8}
+            }
+        ]);
+    });
+
+    // Should do AI move
+});

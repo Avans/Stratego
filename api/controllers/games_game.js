@@ -10,7 +10,8 @@ var HttpError = require('../../helpers/HttpError');
 module.exports = {
     get: wrap_promise(getGame),
     delete: wrap_promise(deleteGame),
-    post_start_board: wrap_promise(postStartBoard)
+    post_start_board: wrap_promise(postStartBoard),
+    post_actions: wrap_promise(postActions),
 };
 
 /**
@@ -51,4 +52,33 @@ async function postStartBoard(req, res) {
     game = await game.save();
 
     res.json(game.outputForUser(game));
+}
+
+/**
+ * Post a start board
+ */
+async function postActions(req, res) {
+    let game = await Game.findByIdAndUser(req.params.id, req.user);
+
+    const actions = game.doMove(
+        req.user._id,
+        req.body.square.column,
+        req.body.square.row,
+        req.body.square_to.column,
+        req.body.square_to.row);
+
+    // TODO: Do an AI move
+
+
+    // Show the actions from the rotated point of view for player 2
+    if(game.getPlayerNumber(req.user._id) === 2) {
+        Game.rotateActions(actions);
+    }
+
+    await game.save();
+
+    res.json({
+        game: game.outputForUser(req.user),
+        actions: actions
+    });
 }

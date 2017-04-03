@@ -23,7 +23,7 @@ var gameSchema = new mongoose.Schema({
         'started',
         'game_over',
         ]},
-  player1_turn: {type: String, required: true, type: Boolean, default: true},
+  player1s_turn: {type: String, required: true, type: Boolean, default: true},
   player1_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
   player2_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
   start_board: {
@@ -82,8 +82,12 @@ gameSchema.statics.findByIdAndUser = async function(id, user) {
 }
 
 gameSchema.methods.setState = function(state) {
-  this.state = state;
-  // TODO: emit with sockets
+    this.state = state;
+    this.notifyStateChange();
+}
+
+gameSchema.methods.notifyStateChange = function() {
+    // TODO: emit with sockets
 }
 
 /**
@@ -159,6 +163,18 @@ gameSchema.statics.getRotatedBoard = function(b) {
     board.map((v) => v.reverse());
     board.reverse();
     return board;
+}
+
+gameSchema.statics.rotateActions = function(actions) {
+    for(let i = 0; i < actions.length; i++) {
+        actions[i].square.row = 9 - actions[i].square.row;
+        actions[i].square.column = 9 - actions[i].square.column;
+
+        if(actions[i].hasOwnProperty('square_to')) {
+            actions[i].square_to.row = 9 - actions[i].square_to.row;
+            actions[i].square_to.column = 9 - actions[i].square_to.column;
+        }
+    }
 }
 
 gameSchema.statics.getAIStartBoard = function() {
@@ -442,6 +458,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     if(move) {
         this.board[to_y][to_x] = this.board[from_y][from_x];
         this.board[from_y][from_x] = ' ';
+        this.markModified('board');
     }
     actions.push({
         type: 'move_piece',
@@ -451,6 +468,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
 
     // Change the turn
     this.player1s_turn = !this.player1s_turn;
+    this.notifyStateChange();
 
     // If the flag is captured the game is over
     if(pieceTypeAtTarget === PieceType.TYPES.FLAG) {
