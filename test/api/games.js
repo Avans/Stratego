@@ -385,8 +385,8 @@ describe('POST /api/games/:id/actions', function() {
         const res = await api_request
             .post('/api/games/' + game._id + '/actions')
             .send({
-                square: {row: 0, column: 2},
-                square_to: {row: 1, column: 2},
+                square: {row: 9, column: 7},
+                square_to: {row: 8, column: 7},
             })
             .expect(200);
 
@@ -394,11 +394,27 @@ describe('POST /api/games/:id/actions', function() {
         expect(res.body.actions).to.deep.equal([
             {
                 type: 'move_piece',
-                square: {column: 7, row: 9},
-                square_to: {column: 7, row: 8}
+                square: {row: 9, column: 7},
+                square_to: {row: 8, column: 7}
             }
         ]);
     });
 
-    // TODO: Should do AI move
+    it('should immediately do the AI\'s turn', async function() {
+        game.player2 = 'ai';
+        await game.save();
+
+        const res = await api_request
+            .post('/api/games/' + game._id + '/actions')
+            .send({
+                square: {row: 0, column: 0},
+                square_to: {row: 1, column: 0},
+            })
+            .expect(200);
+        res.body.actions.length.should.equal(2);
+
+        // Player 1 should have the turn again immediately
+        game = await Game.findById(game._id);
+        game.player1s_turn.should.be.true();
+    });
 });

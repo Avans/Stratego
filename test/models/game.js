@@ -188,7 +188,7 @@ describe('Game.getAIMove()', function() {
     it('should return null if there are no valid moves', async function() {
         game.board[0][1] = '2:F';
         const move = game.getAIMove();
-        (move === null).should.eql(true); // This is weird, other ways don't fail on undefined
+        (move === null).should.eql(true); // This is weird, but other ways don't fail on undefined
     });
 });
 

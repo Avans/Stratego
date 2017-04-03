@@ -60,14 +60,36 @@ async function postStartBoard(req, res) {
 async function postActions(req, res) {
     let game = await Game.findByIdAndUser(req.params.id, req.user);
 
-    const actions = game.doMove(
-        req.user._id,
-        req.body.square.column,
-        req.body.square.row,
-        req.body.square_to.column,
-        req.body.square_to.row);
+    let from_x = req.body.square.column;
+    let from_y = req.body.square.row;
+    let to_x = req.body.square_to.column;
+    let to_y = req.body.square_to.row;
 
-    // TODO: Do an AI move
+    // Rotate coordinates for player 2
+    if(game.getPlayerNumber(req.user._id) === 2) {
+        from_x = 9 - from_x;
+        from_y = 9 - from_y;
+        to_x = 9 - to_x;
+        to_y = 9 - to_y;
+    }
+
+    let actions = game.doMove(
+        req.user._id,
+        from_x,
+        from_y,
+        to_x,
+        to_y);
+
+    if(game.isVsAI()) {
+        const ai_move = game.getAIMove();
+        const otherActions = game.doMove('ai',
+            ai_move.square.column,
+            ai_move.square.row,
+            ai_move.square_to.column,
+            ai_move.square_to.row);
+
+        actions = actions.concat(otherActions);
+    }
 
 
     // Show the actions from the rotated point of view for player 2
