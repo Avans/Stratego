@@ -58,6 +58,7 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     app.get('/api/games/:id', games_game.get);
     app.delete('/api/games/:id', games_game.delete);
     app.post('/api/games/:id/start_board', games_game.post_start_board);
+    app.get('/api/games/:id/actions', games_game.get_actions);
     app.post('/api/games/:id/actions', games_game.post_actions);
 
     var games = require('./api/controllers/games');

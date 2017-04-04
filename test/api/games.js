@@ -283,6 +283,64 @@ describe('DELETE /api/games/:id', function() {
     });
 });
 
+describe('GET /api/games/:id/actions', function() {
+    let game;
+
+    beforeEach(async function() {
+        game = new Game();
+        game.player1 = test_user._id;
+        game.actions = [{
+            type: 'move_piece',
+            square: {row: 0, column: 0},
+            square_to: {row: 1, column: 0}
+        },
+        {
+            type: 'reveal_piece',
+            square: {row: 0, column: 0},
+            piece: 'B'
+        }];
+        game = await game.save();
+    });
+
+    it('should give the list of actions for a game', async function() {
+        const res = await api_request
+            .get('/api/games/' + game._id + '/actions')
+            .expect(200);
+
+        expect(res.body).to.deep.equal([{
+            type: 'move_piece',
+            square: {row: 0, column: 0},
+            square_to: {row: 1, column: 0}
+        },
+        {
+            type: 'reveal_piece',
+            square: {row: 0, column: 0},
+            piece: 'B'
+        }])
+    });
+
+    it('should give a rotated perspective for player 2', async function() {
+        game.player1 = 'someone_else';
+        game.player2 = test_user._id;
+        game = await game.save();
+
+        const res = await api_request
+            .get('/api/games/' + game._id + '/actions')
+            .expect(200);
+
+        expect(res.body).to.deep.equal([{
+            type: 'move_piece',
+            square: {row: 9, column: 9},
+            square_to: {row: 8, column: 9}
+        },
+        {
+            type: 'reveal_piece',
+            square: {row: 9, column: 9},
+            piece: 'B'
+        }]);
+    });
+});
+
 describe('POST /api/games/:id/start_board', function() {
     const board = [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
                    ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],

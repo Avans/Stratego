@@ -11,6 +11,7 @@ module.exports = {
     get: wrap_promise(getGame),
     delete: wrap_promise(deleteGame),
     post_start_board: wrap_promise(postStartBoard),
+    get_actions: wrap_promise(getActions),
     post_actions: wrap_promise(postActions),
 };
 
@@ -54,6 +55,15 @@ async function postStartBoard(req, res) {
     res.json(game.outputForUser(game));
 }
 
+// Get actions
+async function getActions(req, res) {
+    let game = await Game.findByIdAndUser(req.params.id, req.user);
+
+    const actions = game.outputActionsForUser(req.user._id, game.actions);
+
+    res.json(actions);
+}
+
 /**
  * Post a start board
  */
@@ -91,16 +101,10 @@ async function postActions(req, res) {
         actions = actions.concat(otherActions);
     }
 
-
-    // Show the actions from the rotated point of view for player 2
-    if(game.getPlayerNumber(req.user._id) === 2) {
-        Game.rotateActions(actions);
-    }
-
     await game.save();
 
     res.json({
         game: game.outputForUser(req.user),
-        actions: actions
+        actions: game.outputActionsForUser(req.user._id, actions)
     });
 }

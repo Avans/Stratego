@@ -50,6 +50,7 @@ var gameSchema = new mongoose.Schema({
             type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
             square: {type: coordinateType, required: true},
             square_to: {type: coordinateType},
+            piece: {type: String}
         }
     ]}
 });
@@ -163,18 +164,6 @@ gameSchema.statics.getRotatedBoard = function(b) {
     board.map((v) => v.reverse());
     board.reverse();
     return board;
-}
-
-gameSchema.statics.rotateActions = function(actions) {
-    for(let i = 0; i < actions.length; i++) {
-        actions[i].square.row = 9 - actions[i].square.row;
-        actions[i].square.column = 9 - actions[i].square.column;
-
-        if(actions[i].hasOwnProperty('square_to')) {
-            actions[i].square_to.row = 9 - actions[i].square_to.row;
-            actions[i].square_to.column = 9 - actions[i].square_to.column;
-        }
-    }
 }
 
 gameSchema.statics.getAIStartBoard = function() {
@@ -536,6 +525,35 @@ gameSchema.methods.outputForUser = function(user) {
 
     return returnValue;
 };
+
+/**
+ * Show actions from a users perspective
+ */
+gameSchema.methods.outputActionsForUser = function(user, actions_original) {
+    // Copy actions
+    const actions = JSON.parse(JSON.stringify(actions_original));
+
+    // Show the actions from the rotated point of view for player 2
+    if(this.getPlayerNumber(user) === 2) {
+        for(let i = 0; i < actions.length; i++) {
+            actions[i].square.row = 9 - actions[i].square.row;
+            actions[i].square.column = 9 - actions[i].square.column;
+
+            if(actions[i].hasOwnProperty('square_to')) {
+                actions[i].square_to.row = 9 - actions[i].square_to.row;
+                actions[i].square_to.column = 9 - actions[i].square_to.column;
+            }
+        }
+    }
+
+    // Delete the _id property that mongoose adds
+    for(let i = 0; i < actions.length; i += 1) {
+        delete actions[i]['_id'];
+    }
+
+    return actions;
+}
+
 
 function validateBoard() {
     // TODO
