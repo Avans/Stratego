@@ -425,6 +425,7 @@ describe('POST /api/games/:id/actions', function() {
                 square_to: {column: 0, row: 1}
             }
         ]);
+        game = await Game.findById(game._id);
         expect(res.body.game).to.deep.equal(game.outputForUser(test_user));
 
         // Expect move to be saved

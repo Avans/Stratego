@@ -108,7 +108,7 @@ describe('Game.outputForUser()', function() {
         output.hasOwnProperty('start_board').should.be.true();
 
         // Don't add it when the game hasn't started yet
-        game.state = Game.STATE.WAITING_FOR_PIECES;
+        game.start_board = undefined
         output = game.outputForUser('test_user');
         output.hasOwnProperty('start_board').should.be.false();
     });

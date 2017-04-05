@@ -576,13 +576,12 @@ gameSchema.methods.outputForUser = function(user) {
     }
 
     // Add board information
-    returnValue.board = outputBoard(this.board);
-    if(this.state === gameSchema.statics.STATE.STARTED
-        || this.state === gameSchema.statics.STATE.GAME_OVER) {
+    if(this.board !== undefined) {
+        returnValue.board = outputBoard(this.board);
+    }
+    if(this.start_board !== undefined) {
         returnValue.start_board = outputBoard(this.start_board);
     }
-
-
 
     return returnValue;
 };
