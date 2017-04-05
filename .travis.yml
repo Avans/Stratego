@@ -8,3 +8,5 @@ install:
 
 services:
   - mongodb
+
+script: nyc npm test && nyc report --reporter=text-lcov | ./node_modules/coveralls/bin/coveralls.js
