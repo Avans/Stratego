@@ -12,8 +12,95 @@ var User = mongoose.model('User');
  * Test API key checks
  */
 describe('Game.outputForUser()', function() {
-    it('should work', async function() {
-        // TODO
+    let game;
+
+    beforeEach(async function() {
+        game = new Game();
+        game._id = 'game_id';
+        game.player1 = 'test_user';
+        game.player2 = 'someone_else';
+        game.board = [['1:4', '2:6', ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']];
+        game.player1s_turn = true
+        game.state = Game.STATE.STARTED;
+    });
+
+    it('should give game id', async function() {
+        const output = game.outputForUser('test_user');
+        output.id.should.equal('game_id');
+    });
+
+    it('should give the name of the opponent', async function() {
+        let output = game.outputForUser('test_user');
+        output.opponent.should.equal('someone_else');
+
+        output = game.outputForUser('someone_else');
+        output.opponent.should.equal('test_user');
+
+        game.state = Game.STATE.WAITING_FOR_AN_OPPONENT;
+        output = game.outputForUser('someone_else');
+        output.hasOwnProperty('opponent').should.be.false();
+    });
+
+    it('should give winner information', async function() {
+        let output = game.outputForUser('test_user');
+        output.hasOwnProperty('winner').should.be.false();
+
+        game.winner = 'test_user';
+        game.state = Game.STATE.GAME_OVER;
+        output = game.outputForUser('test_user');
+        output.winner.should.equal('test_user')
+    });
+
+    it('should give state information', async function() {
+        let output = game.outputForUser('test_user');
+        output.state.should.equal('my_turn');
+
+        output = game.outputForUser('someone_else');
+        output.state.should.equal('opponent_turn');
+
+        game.state = Game.STATE.WAITING_FOR_PIECES;
+        output = game.outputForUser('test_user');
+        output.state.should.equal('waiting_for_pieces');
+    });
+
+    it('should give board information', async function() {
+        let output = game.outputForUser('test_user');
+
+        expect(output.board).to.deep.equal(
+                     [['4',   'O',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']]);
+
+        // Should give rotated view for player 2
+        output = game.outputForUser('someone_else');
+        expect(output.board).to.deep.equal(
+                     [[' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '6',   'O']]);
+
     });
 });
 

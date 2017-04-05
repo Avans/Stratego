@@ -520,7 +520,64 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
 gameSchema.methods.outputForUser = function(user) {
     const returnValue = {};
 
+    // Add game id information
     returnValue.id = this._id;
+
+    // Add opponent information
+    if(this.state !== gameSchema.statics.STATE.WAITING_FOR_AN_OPPONENT) {
+        if(this.getPlayerNumber(user) === 1) {
+            returnValue.opponent = this.player2;
+        } else {
+            returnValue.opponent = this.player1;
+        }
+    }
+
+    // Add winner information
+    if(this.state === gameSchema.statics.STATE.GAME_OVER) {
+        returnValue.winner = this.winner;
+    }
+
+    // Add state information
+    const playerNumber = this.getPlayerNumber(user);
+    if(this.state === gameSchema.statics.STATE.STARTED) {
+        if(this.getPlayerTurn() === playerNumber) {
+            returnValue.state = 'my_turn';
+        } else {
+            returnValue.state = 'opponent_turn'
+        }
+    } else {
+        returnValue.state = this.state;
+    }
+
+    function outputBoard(board_original) {
+        let board = JSON.parse(JSON.stringify(board_original));
+
+        // Hide player information
+        for(let y = 0; y < 10; y += 1) {
+            for(let x = 0; x < 10; x += 1) {
+                if(board_original[y][x] === ' ') {
+                    // Empty tile
+                    board[y][x] = ' ';
+                } else if(parseInt(board_original[y][x][0]) === playerNumber) {
+                    // Own piece
+                    board[y][x] = board_original[y][x][2];
+                } else {
+                    // Opponent piece
+                    board[y][x] = 'O';
+                }
+            }
+        }
+        // Rotate board for player 2
+        if(playerNumber === 2) {
+            board = gameSchema.statics.getRotatedBoard(board);
+        }
+
+        return board;
+    }
+
+    // Add board information
+    returnValue.board = outputBoard(this.board);
+
 
 
     return returnValue;
