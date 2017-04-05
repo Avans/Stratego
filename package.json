@@ -34,6 +34,6 @@
   },
   "scripts": {
     "start": "node --harmony-async-await app.js",
-    "test": "DB_CONNECTION=mongodb://localhost:27017/stratego_test nyc mocha --harmony-async-await --recursive test",
+    "test": "DB_CONNECTION=mongodb://localhost:27017/stratego_test nyc mocha --harmony-async-await --recursive test"
   }
 }

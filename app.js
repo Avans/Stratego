@@ -42,7 +42,7 @@ app.use('/api', function(req, res, next) {
 
 app.use('/static', express.static('static'));
 
-require('./api_key')(app);
+require('./api_key').configurePassport(app);
 
 swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     if (err) { throw err; }
