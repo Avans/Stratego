@@ -141,6 +141,7 @@ describe('Game.validateStartBoard()', function() {
         Game.validateStartBoard.bind(Game, true).should.throw(ValidationError);
         Game.validateStartBoard.bind(Game, []).should.throw(ValidationError);
         Game.validateStartBoard.bind(Game, [1, 2, 3, 4]).should.throw(ValidationError);
+        Game.validateStartBoard.bind(Game, [[],[],[],[]]).should.throw(ValidationError);
 
         board[0][0] = true;
         Game.validateStartBoard.bind(Game, board).should.throw(ValidationError);
