@@ -1,6 +1,7 @@
 const expect = require('chai').expect;
 const should = require('should');
 const app = require('../app');
+const request = require('supertest')(app);
 
 const api_key = require('../api_key');
 const mongoose = require('mongoose');
@@ -72,5 +73,10 @@ describe('api_key', function() {
         });
     });
 
+    it('GET /api_key should redirect if logged out', async function() {
+        await request
+            .get('/api_key')
+            .expect('Location', '/api_key/login')
+    });
 
 });
