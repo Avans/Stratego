@@ -74,6 +74,9 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     app.post('/api/games', games.post);
     app.delete('/api/games', games.delete);
 
+    const users = require('./api/controllers/users');
+    app.get('/api/users/me', users.get_me);
+
     // API documentatie
     var swaggerUi = require('swagger-ui-express');
     app.use('/', swaggerUi.serve, swaggerUi.setup(YAML.load('./api/swagger/swagger.yaml')));
