@@ -576,7 +576,9 @@ gameSchema.methods.outputForUser = function(user) {
     }
 
     // Add board information
-    if(this.board !== undefined) {
+    if(this.board !== undefined
+        && this.state !== gameSchema.statics.STATE.WAITING_FOR_AN_OPPONENT
+        && this.state !== gameSchema.statics.STATE.WAITING_FOR_PIECES) {
         returnValue.board = outputBoard(this.board);
     }
     if(this.start_board !== undefined) {

@@ -103,6 +103,13 @@ describe('Game.outputForUser()', function() {
                       [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '6',   'O']]);
     });
 
+    it('shouldn\'t give board information if the game hasn\'t started yet', async function() {
+        game.state = Game.STATE.WAITING_FOR_AN_OPPONENT;
+        let output = game.outputForUser('test_user');
+
+        output.hasOwnProperty('board').should.be.false();
+    });
+
     it('should give start_board information', async function() {
         let output = game.outputForUser('test_user');
         output.hasOwnProperty('start_board').should.be.true();
