@@ -264,6 +264,11 @@ describe('Game.checkValidMove()', function() {
         game.checkValidMove.bind(game, 9, 9, 9, 7).should.throw(ValidationError);
         game.checkValidMove.bind(game, 7, 0, 9, 0).should.throw(ValidationError);
     });
+
+    it('should catch a corrupt board', async function() {
+      game.board[0][0] = '0:4';
+      game.checkValidMove.bind(game, 0, 0, 0, 1).should.throw(Error);
+    })
 });
 
 describe('Game.getAIMove()', function() {
@@ -403,6 +408,16 @@ describe('Game.doMove()', function() {
         game.doMove('test_user', 0, 0, 1, 0);
 
         game.winner.should.equal('test_user');
+        game.state.should.equal(Game.STATE.GAME_OVER);
+    });
+
+    it('should finish the game when player 2 captures the flag', async function() {
+        game.board[0][0] = '1:F';
+        game.player1s_turn = false;
+
+        game.doMove('someone_else', 1, 0, 0, 0);
+
+        game.winner.should.equal('someone_else');
         game.state.should.equal(Game.STATE.GAME_OVER);
     });
 

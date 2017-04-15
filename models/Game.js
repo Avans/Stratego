@@ -243,8 +243,11 @@ gameSchema.methods.getPlayerNumberOfPiece = function(x, y) {
     if(value[0] === '1') {
         return 1;
     }
-    if(value[0] === '2') {
+    else if(value[0] === '2') {
         return 2;
+    } else {
+        // This should never happen
+        throw new Error(util.format('Invalid board value: %f', value));
     }
 }
 
