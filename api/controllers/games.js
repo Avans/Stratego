@@ -14,8 +14,8 @@ module.exports = {
  * Get the list of games that the user is participating in
  */
 async function getGames(req, res) {
-    let games = await Game.find().findWithUser(req.user);
-    games = games.map((game) => game.outputForUser(req.user));
+    let games = await Game.find().findWithUser(req.user._id);
+    games = games.map((game) => game.outputForUser(req.user._id));
     res.json(games);
 }
 
@@ -64,7 +64,7 @@ async function postGames(req, res) {
         }
 
     }
-    res.status(201).json(game.outputForUser(req.user));
+    res.status(201).json(game.outputForUser(req.user._id));
 }
 
 /**

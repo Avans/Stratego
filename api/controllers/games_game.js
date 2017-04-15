@@ -21,7 +21,7 @@ module.exports = {
 async function getGame(req, res) {
     const game = await Game.findByIdAndUser(req.params.id, req.user);
 
-    res.json(game.outputForUser(req.user));
+    res.json(game.outputForUser(req.user._id));
 }
 
 /**
@@ -52,7 +52,7 @@ async function postStartBoard(req, res) {
 
     game = await game.save();
 
-    res.json(game.outputForUser(game));
+    res.json(game.outputForUser(req.user._id));
 }
 
 // Get actions
@@ -104,7 +104,7 @@ async function postActions(req, res) {
     await game.save();
 
     res.json({
-        game: game.outputForUser(req.user),
+        game: game.outputForUser(req.user._id),
         actions: game.outputActionsForUser(req.user._id, actions)
     });
 }

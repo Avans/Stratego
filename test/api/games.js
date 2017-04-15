@@ -91,7 +91,7 @@ describe('GET /api/games', function() {
 
         const res = await api_request.get('/api/games').expect(200);
 
-        res.body.should.eql([game.outputForUser(test_user)]);
+        res.body.should.eql([game.outputForUser(test_user._id)]);
     });
 
     it('should return a game with the user as player 2', async function() {
@@ -102,7 +102,7 @@ describe('GET /api/games', function() {
 
         const res = await api_request.get('/api/games').expect(200);
 
-        res.body.should.eql([game.outputForUser(test_user)]);
+        res.body.should.eql([game.outputForUser(test_user._id)]);
     });
 
     it('shouldn\'t return games the user is not participating in', async function() {
@@ -143,7 +143,7 @@ describe('POST /api/games', function() {
         const game = await Game.findById(res.body.id);
 
         // Test for correct output
-        res.body.should.eql(game.outputForUser(test_user));
+        res.body.should.eql(game.outputForUser(test_user._id));
 
         // Test if the game is in a correct state
         game.player1.should.eql(test_user._id);
@@ -156,6 +156,8 @@ describe('POST /api/games', function() {
                             .post('/api/games')
                             .send('{"ai": true}')
                             .expect(201);
+
+        expect(res.body.opponent).to.eql('ai');
 
         const game = await Game.findById(res.body.id);
 
@@ -253,7 +255,7 @@ describe('GET /api/games/:id', function() {
                             .get('/api/games/' + game._id)
                             .expect(200);
 
-        res.body.should.eql(game.outputForUser(test_user));
+        res.body.should.eql(game.outputForUser(test_user._id));
     });
 
     it('should send a 404 if the game doesn\'t exist', async function() {
@@ -365,6 +367,7 @@ describe('POST /api/games/:id/start_board', function() {
     it('should still be waiting for pieces after the first board', async function() {
         let game = new Game();
         game.player1 = test_user;
+        game.player2 = 'someone_else';
         game.state = Game.STATE.WAITING_FOR_PIECES;
         game = await game.save();
 
@@ -378,7 +381,7 @@ describe('POST /api/games/:id/start_board', function() {
         game.state.should.be.equal(Game.STATE.WAITING_FOR_PIECES);
 
         // Should give the new game as output
-        res.body.should.eql(game.outputForUser(test_user));
+        res.body.should.eql(game.outputForUser(test_user._id));
     });
 
     it('should start playing if the other player has already set up his board', async function() {
@@ -441,7 +444,7 @@ describe('POST /api/games/:id/actions', function() {
             }
         ]);
         game = await Game.findById(game._id);
-        expect(res.body.game).to.deep.equal(game.outputForUser(test_user));
+        expect(res.body.game).to.deep.equal(game.outputForUser(test_user._id));
 
         // Expect move to be saved
         game = await Game.findById(game._id);
