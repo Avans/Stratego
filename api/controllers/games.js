@@ -36,21 +36,10 @@ async function postGames(req, res) {
 
         game = await game.save();
     } else {
-        // Check that the user is not already waiting for an opponent
-        const user_already_has_waiting_game = (await Game.count({
-            player1: req.user._id,
-            state: Game.STATE.WAITING_FOR_AN_OPPONENT
-        }) >= 1);
-
-        if(user_already_has_waiting_game) {
-            res.status(400).json({message: "You already have a game that is waiting for an opponent"});
-            return;
-        }
-
         // Try to find an existing game to join in
         game = await Game.findOne({state: Game.STATE.WAITING_FOR_AN_OPPONENT});
 
-        if(game !== null) {
+        if(game !== null && game.player1 !== req.user._id) {
             // Join an existing match
             game.player2 = req.user._id;
             game.setState(Game.STATE.WAITING_FOR_PIECES);
@@ -61,6 +50,19 @@ async function postGames(req, res) {
             game.player1 = req.user._id;
             game.setState(Game.STATE.WAITING_FOR_AN_OPPONENT);
             game = await game.save();
+
+            // Check that the game is not a duplicate pending game
+            const user_already_has_waiting_game = (await Game.count({
+                player1: req.user._id,
+                state: Game.STATE.WAITING_FOR_AN_OPPONENT
+            }) >= 2);
+
+            if(user_already_has_waiting_game) {
+                await game.remove();
+
+                res.status(400).json({message: "You already have a game that is waiting for an opponent"});
+                return;
+            }
         }
 
     }
