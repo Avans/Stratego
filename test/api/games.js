@@ -148,7 +148,7 @@ describe('POST /api/games', function() {
         // Test if the game is in a correct state
         game.player1.should.eql(test_user._id);
         should.not.exist(game.player2);
-        game.state.should.eql('waiting_for_an_opponent');
+        game.state.should.eql(Game.STATE.WAITING_FOR_AN_OPPONENT);
     });
 
     it('should create a new AI game', async function() {
@@ -162,7 +162,7 @@ describe('POST /api/games', function() {
         game.player1.should.eql(test_user._id);
         game.player2.should.eql('ai');
         game.player2_set_up_pieces.should.be.true();
-        game.state.should.eql('waiting_for_pieces');
+        game.state.should.eql(Game.STATE.WAITING_FOR_PIECES);
     });
 
     it('should join an existing game', async function() {
@@ -182,7 +182,22 @@ describe('POST /api/games', function() {
         game = await Game.findById(res.body.id);
 
         game.player2.should.eql(test_user._id);
-        game.state.should.eql('waiting_for_pieces');
+        game.state.should.eql(Game.STATE.WAITING_FOR_PIECES);
+    });
+
+    it('should not create a new game if the user already has a waiting game', async function() {
+        let game = new Game();
+        game.player1 = test_user._id;
+        game.state = Game.STATE.WAITING_FOR_AN_OPPONENT;
+        await game.save();
+
+        // Try creating a game
+        const res = await api_request
+                            .post('/api/games')
+                            .send('{"ai": false}')
+                            .expect(400);
+
+        expect(await Game.count()).to.eql(1);
     });
 });
 
