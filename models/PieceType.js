@@ -12,10 +12,15 @@ function PieceType(code, name, relative_value, number_per_player) {
         return util.format("%s ('%s')", name, code);
     }
 
-    this.canBeat = function(otherPieceType) {
-        // Spy can beat Marshal
+    this.canBeat = function(otherPieceType, isInitiating) {
+        // Spy can beat Marshal if it attacks
         if(this === PieceType.TYPES.SPY && otherPieceType === PieceType.TYPES.MARSHAL) {
-            return true;
+            return isInitiating;
+        }
+
+        // Marshal can beat spy if it attacks
+        if(this === PieceType.TYPES.MARSHAL && otherPieceType === PieceType.TYPES.SPY) {
+            return isInitiating;
         }
 
         // Miner can beat bomb
