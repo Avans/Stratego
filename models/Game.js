@@ -468,7 +468,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         });
 
         // Destroy target piece
-        if(pieceTypeMoving.canBeat(pieceTypeAtTarget, false)) {
+        if(pieceTypeMoving.canBeat(pieceTypeAtTarget, true)) {
             actions.push({
                 type: 'destroy_piece',
                 square: to
@@ -477,7 +477,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         }
 
         // Destroy moving piece if it loses (or draws)
-        if(pieceTypeAtTarget.canBeat(pieceTypeMoving, true)) {
+        if(pieceTypeAtTarget.canBeat(pieceTypeMoving, false)) {
             actions.push({
                 type: 'destroy_piece',
                 square: from

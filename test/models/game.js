@@ -416,6 +416,16 @@ describe('Game.doMove()', function() {
         game.board[0][1].should.equal('2:6');
     });
 
+    it('should let spy win from the marshal', async function() {
+        game.board[0][0] = '1:S';
+        game.board[0][1] = '2:1';
+
+        game.doMove('test_user', 0, 0, 1, 0);
+
+        game.board[0][0].should.equal(' ');
+        game.board[0][1].should.equal('1:S');
+    });
+
     // should finish the game when the flag is captured
     it('should finish the game when the flag is captured', async function() {
         game.board[0][1] = '2:F';
