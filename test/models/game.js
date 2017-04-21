@@ -71,6 +71,23 @@ describe('Game.outputForUser()', function() {
         game.state = Game.STATE.WAITING_FOR_PIECES;
         output = game.outputForUser('test_user');
         output.state.should.equal('waiting_for_pieces');
+
+        // Case where player2 has the pieces set up, but player1 hasn't
+        game.player1_set_up_pieces = false;
+        game.player2_set_up_pieces = true;
+        output = game.outputForUser('test_user');
+        output.state.should.equal('waiting_for_pieces');
+        console.log('-------------------')
+        output = game.outputForUser('someone_else');
+        output.state.should.equal('waiting_for_opponent_pieces');
+
+        // Case where player1 has the pieces set up, but player2 hasn't
+        game.player1_set_up_pieces = true;
+        game.player2_set_up_pieces = false;
+        output = game.outputForUser('test_user');
+        output.state.should.equal('waiting_for_opponent_pieces');
+        output = game.outputForUser('someone_else');
+        output.state.should.equal('waiting_for_pieces');
     });
 
     it('should give board information', async function() {

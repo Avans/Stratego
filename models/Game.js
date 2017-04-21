@@ -526,10 +526,11 @@ gameSchema.methods.outputForUser = function(user) {
 
     // Add game id information
     returnValue.id = this._id;
+    const playerNumber = this.getPlayerNumber(user);
 
     // Add opponent information
     if(this.state !== gameSchema.statics.STATE.WAITING_FOR_AN_OPPONENT) {
-        if(this.getPlayerNumber(user) === 1) {
+        if(playerNumber === 1) {
             returnValue.opponent = this.player2;
         } else {
             returnValue.opponent = this.player1;
@@ -542,7 +543,6 @@ gameSchema.methods.outputForUser = function(user) {
     }
 
     // Add state information
-    const playerNumber = this.getPlayerNumber(user);
     if(this.state === gameSchema.statics.STATE.STARTED) {
         if(this.getPlayerTurn() === playerNumber) {
             returnValue.state = 'my_turn';
@@ -550,7 +550,19 @@ gameSchema.methods.outputForUser = function(user) {
             returnValue.state = 'opponent_turn'
         }
     } else {
-        returnValue.state = this.state;
+        if(this.state === gameSchema.statics.STATE.WAITING_FOR_PIECES) {
+
+            // Check for the state Waiting for Opponent's pieces
+            //console.log(playerNumber, this.player1_set_up_pieces, this.player2_set_up_pieces);
+            if( (playerNumber === 1 && !this.player1_set_up_pieces)
+             || (playerNumber === 2 && !this.player2_set_up_pieces)) {
+                returnValue.state = 'waiting_for_pieces';
+            } else {
+                returnValue.state = 'waiting_for_opponent_pieces';
+            }
+        } else {
+            returnValue.state = this.state;
+        }
     }
 
     function outputBoard(board_original) {
