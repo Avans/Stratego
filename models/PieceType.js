@@ -14,12 +14,12 @@ function PieceType(code, name, relative_value, number_per_player) {
 
     this.canBeat = function(otherPieceType) {
         // Spy can beat Marshal
-        if(this == PieceType.TYPES.SPY && otherPieceType == PieceType.TYPES.MARSHAL) {
+        if(this === PieceType.TYPES.SPY && otherPieceType === PieceType.TYPES.MARSHAL) {
             return true;
         }
 
         // Miner can beat bomb
-        if(this == PieceType.TYPES.MINER && otherPieceType == PieceType.TYPES.BOMB) {
+        if(this === PieceType.TYPES.MINER && otherPieceType === PieceType.TYPES.BOMB) {
             return true;
         }
 
