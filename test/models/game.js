@@ -389,7 +389,22 @@ describe('Game.doMove()', function() {
         game.board[0][0].should.equal(' ');
         game.board[0][1].should.equal(' ');
 
-        actions.length.should.equal(5); // One extra destroy_piece
+
+        expect(actions).to.deep.equal([
+            { type: 'reveal_piece',
+              square: { column: 0, row: 0 },
+              piece: '6'
+            },
+            { type: 'reveal_piece',
+              square: { column: 1, row: 0 },
+              piece: '6'
+            },
+            { type: 'destroy_piece',
+              square: { column: 1, row: 0 }
+            },
+            { type: 'destroy_piece',
+              square: { column: 0, row: 0 }
+            }]);
     });
 
     it('should destroy the moving piece if it loses', async function() {
@@ -451,7 +466,6 @@ describe('Game.doMove()', function() {
         game.doMove.bind(game, 'someone_else', 0, 0, 0, 1).should.throw(ValidationError);
 
     });
-
 });
 
 /**

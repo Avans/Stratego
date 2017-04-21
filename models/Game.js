@@ -492,12 +492,13 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         this.board[to_y][to_x] = this.board[from_y][from_x];
         this.board[from_y][from_x] = ' ';
         this.markModified('board');
+
+        actions.push({
+            type: 'move_piece',
+            square: from,
+            square_to: to
+        });
     }
-    actions.push({
-        type: 'move_piece',
-        square: from,
-        square_to: to
-    });
 
     // Change the turn
     this.player1s_turn = !this.player1s_turn;
