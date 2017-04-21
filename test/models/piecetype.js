@@ -27,6 +27,10 @@ describe('PieceType.canBeat()', function() {
         PieceType.TYPES.MINER.canBeat(PieceType.TYPES.BOMB).should.be.true();
     });
 
+    it("Bomb should not beat Miner", async function() {
+        PieceType.TYPES.BOMB.canBeat(PieceType.TYPES.MINER).should.be.false();
+    });
+
     it("Scout should beat Scout", async function() {
         // Equal values can beat the other
         // with the provision that they are themselves also destroyed (that logic is somewhere else)

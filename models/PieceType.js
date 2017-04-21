@@ -23,6 +23,11 @@ function PieceType(code, name, relative_value, number_per_player) {
             return true;
         }
 
+        // Bomb can not beat miner
+        if(this === PieceType.TYPES.BOMB && otherPieceType === PieceType.TYPES.MINER) {
+            return false;
+        }
+
         // Higher pieces can beat lower pieces
         if(this.relative_value >= otherPieceType.relative_value) {
             return true;
