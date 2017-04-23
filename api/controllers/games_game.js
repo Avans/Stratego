@@ -92,13 +92,17 @@ async function postActions(req, res) {
 
     if(game.isVsAI()) {
         const ai_move = game.getAIMove();
-        const otherActions = game.doMove('ai',
-            ai_move.square.column,
-            ai_move.square.row,
-            ai_move.square_to.column,
-            ai_move.square_to.row);
 
-        actions = actions.concat(otherActions);
+        // Don't do anything if the AI has no legal moves
+        if(ai_move !== null) {
+            const otherActions = game.doMove('ai',
+                ai_move.square.column,
+                ai_move.square.row,
+                ai_move.square_to.column,
+                ai_move.square_to.row);
+
+            actions = actions.concat(otherActions);
+        }
     }
 
     await game.save();

@@ -494,4 +494,21 @@ describe('POST /api/games/:id/actions', function() {
         game = await Game.findById(game._id);
         game.player1s_turn.should.be.true();
     });
+
+    it('should not crash if the ai has no legal moves', async function() {
+        game.player2 = 'ai';
+        game.board[0][2] = '2:F';
+        game.markModified('board');
+        await game.save();
+
+        const res = await api_request
+            .post('/api/games/' + game._id + '/actions')
+            .send({
+                square: {row: 0, column: 0},
+                square_to: {row: 1, column: 0},
+            })
+            .expect(200);
+
+        game = await Game.findById(game._id);
+    });
 });
