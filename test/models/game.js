@@ -77,7 +77,6 @@ describe('Game.outputForUser()', function() {
         game.player2_set_up_pieces = true;
         output = game.outputForUser('test_user');
         output.state.should.equal('waiting_for_pieces');
-        console.log('-------------------')
         output = game.outputForUser('someone_else');
         output.state.should.equal('waiting_for_opponent_pieces');
 

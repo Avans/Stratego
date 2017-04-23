@@ -553,7 +553,6 @@ gameSchema.methods.outputForUser = function(user) {
         if(this.state === gameSchema.statics.STATE.WAITING_FOR_PIECES) {
 
             // Check for the state Waiting for Opponent's pieces
-            //console.log(playerNumber, this.player1_set_up_pieces, this.player2_set_up_pieces);
             if( (playerNumber === 1 && !this.player1_set_up_pieces)
              || (playerNumber === 2 && !this.player2_set_up_pieces)) {
                 returnValue.state = 'waiting_for_pieces';
