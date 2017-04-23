@@ -90,7 +90,7 @@ async function postActions(req, res) {
         to_x,
         to_y);
 
-    if(game.isVsAI()) {
+    if(game.isVsAI() && game.state !== Game.STATE.GAME_OVER) {
         const ai_move = game.getAIMove();
 
         // Don't do anything if the AI has no legal moves

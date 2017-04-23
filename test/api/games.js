@@ -508,7 +508,23 @@ describe('POST /api/games/:id/actions', function() {
                 square_to: {row: 1, column: 0},
             })
             .expect(200);
+    });
+
+    it('should not let the ai do a move after the player catches the flag', async function() {
+        game.player2 = 'ai';
+        game.board[1][0] = '2:F';
+        game.markModified('board');
+        await game.save();
+
+        await api_request
+            .post('/api/games/' + game._id + '/actions')
+            .send({
+                square: {row: 0, column: 0},
+                square_to: {row: 1, column: 0},
+            })
+            .expect(200);
 
         game = await Game.findById(game._id);
+        game.board[0][2].should.equal('2:6');
     });
 });
