@@ -25,16 +25,16 @@ info:
       Code  | Naam       | Aantal | Bewegen
       ------|------------|--------|----------
       B     | Bom        | 6      | Mag niet bewegen
-      10    | Maarschalk | 1      |
-      9     | Generaal   | 1      |
-      8     | Kolonel    | 2      |
-      7     | Majoor     | 3      |
-      6     | Kapitein   | 4      |
-      5     | Luitenant  | 4      |
-      4     | Sergeant   | 4      |
-      3     | Mineur     | 5      |
-      2     | Verkenner  | 8      | Mag horizontaal en verticaal zo ver mogelijk bewegen, maar niet over andere stukken heen en niet over water. De verkenner mag op die manier ook een stuk proberen te slaan.
-      1     | Spion      | 1      |
+      1     | Maarschalk | 1      |
+      2     | Generaal   | 1      |
+      3     | Kolonel    | 2      |
+      4     | Majoor     | 3      |
+      5     | Kapitein   | 4      |
+      6     | Luitenant  | 4      |
+      7     | Sergeant   | 4      |
+      8     | Mineur     | 5      |
+      9     | Verkenner  | 8      | Mag horizontaal en verticaal zo ver mogelijk bewegen, maar niet over andere stukken heen en niet over water. De verkenner mag op die manier ook een stuk proberen te slaan.
+      S     | Spion      | 1      |
       F     | Vlag       | 1      | Mag niet bewegen
 
       Spelers zijn om en om aan de beurt. Als de speler aan de beurt mag hij één van zijn stukken één vakje horizontaal of verticaal verplaatsen, niet diagonaal. Stukken mogen niet over elkaar heen springen. Zoals hierboven te zien is geldt voor sommige stukken een uitzondering.
