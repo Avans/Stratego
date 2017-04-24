@@ -155,6 +155,15 @@ info:
       * destroy
       * move
 
+      ## AI
+      De zetten die de AI doet zijn allemaal willekeurig. Het is dus vrij makkelijk om van de AI te winnen.
+
+      Als je tegen de AI speelt zal deze altijd met het onderstaande bord starten:
+
+      ![](static/ai_start_board.png)
+
+
+
       # Klik op 'Expand Operations' hieronder om de API te zien.
 
 
@@ -485,7 +494,7 @@ definitions:
         minimum: 0
         maximum: 9
         type: integer
-        
+
   User:
     type: object
     description: Gegevens van een user
