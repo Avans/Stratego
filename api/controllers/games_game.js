@@ -102,6 +102,8 @@ async function postActions(req, res) {
                 ai_move.square_to.row);
 
             actions = actions.concat(otherActions);
+        } else {
+            game.player1s_turn = true;
         }
     }
 

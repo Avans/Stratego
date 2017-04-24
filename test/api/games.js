@@ -525,6 +525,7 @@ describe('POST /api/games/:id/actions', function() {
             .expect(200);
 
         game = await Game.findById(game._id);
+        game.player1s_turn.should.be.true();
         game.board[0][2].should.equal('2:6');
     });
 });
