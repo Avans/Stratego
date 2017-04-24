@@ -47,18 +47,18 @@ info:
       * Als de spion de maarschalk pakt wint de spion (let op: als de maarschalk de spion pakt wint de maarschalk!)
       * Als de bom wordt gepakt wint de bom, met uitzondering van de mineur die het wint van de bom.
 
-      Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden in de API aangegeven met de code 'O' (van 'opponent'). Als je ze probeert te pakken krijg je wel even te zien welk type stuk je probeert te pakken. Dit laat je aan de gebruiker laten zien zodat hier rekening mee kan houden in de verdere loop van het spel.
+      Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden in de API aangegeven met de code 'O' (van 'opponent'). Als je ze probeert te pakken krijg je via de actions wel even te zien welk type stuk je probeert te pakken.
 
-      Alle spelregels zijn al geïmplementeerd in de server, je hoeft voor deze opdracht dus alleen maar de UI te maken die het mogelijk maakt om in de browser een potje te spelen. Je moet in je code wel checken op ongeldige zetten, val de server dus niet lastig met zetten die niet uit te voeren zijn!
+      Alle spelregels zijn al geïmplementeerd in de server, je hoeft voor deze opdracht dus alleen maar de GUI te maken die het mogelijk maakt om in de browser een potje te spelen. Je moet in je code wel checken op ongeldige zetten, val de server dus niet lastig met zetten die niet uit te voeren zijn!
 
       ## Game
       Een *Game* object staat voor 1 potje Stratego. Er zijn een aantal eigenschappen die je kan halen uit het game object:
 
       **id**: Dit is een unieke identifier voor een game. Let op dat dit een string is en geen int! Deze gebruik je in de API vaak in de URL om informatie over bijvoorbeeld het bord op te halen.
 
-      **opponent**: Dit is de naam van de tegenstander. Als je tegen de computer speelt is dit 'AI'. Als de status van het spel 'waiting_for_opponent' is is deze eigenschap nog niet aanwezig in het Game object.
+      **opponent**: Dit is de naam van de tegenstander. Als je tegen de computer speelt is dit 'ai'. Als de status van het spel 'waiting_for_opponent' is is deze eigenschap nog niet aanwezig in het Game object.
 
-      **winner**: Als de state van de game 'game_over' is dan staat in deze eigenschap de naam van de winnaar. Bij een andere state is deze eigenschap niet aanwezig.
+      **winner**: Als de state van de game 'game_over' is dan staat in deze eigenschap de naam van de winnaar. Bij elke andere state is deze eigenschap niet aanwezig.
 
       **state**: Dit is de state waar het spel zich in bevindt. Dit is één van de volgende strings:
 
@@ -67,10 +67,10 @@ info:
       ------------ | -------------
       waiting_for_an_opponent | Een Game krijgt deze state als je een Game maakt en er is nog geen andere Game waar je aan mee kan doen. Zodra er iemand anders een game maakt zal die jouw game joinen en zal de game in de state 'waiting_for_pieces' terecht komen. Het is niet mogelijk om tegen jezelf te spelen. Als er al wel een andere game is die op een opponent wacht zal jij die game joinen en zal de game meteen in de state 'waiting_for_pieces' komen. Als je tegen de AI speelt sla je deze state altijd over.
       waiting_for_pieces | Deze state geeft aan dat je nog niet het speelbord hebt doorgegeven. In deze state moet je de speler de mogelijkheid geven om in het spel alle stukken op het bord te plaatsen en deze te submitten. Zodra je hebt gesubmit komt de game in de state 'waiting_for_opponents_pieces', 'my_turn' of 'opponent_turn'. Afhankelijk van of de tegenstander al zijn speelbord heeft opgestuurd.
-      waiting_for_opponents_pieces | Bij deze state heb je het speelbord al opgestuurd, maar heeft de tegenstander dat nog niet gedaan. Je moet dan wachten tot het spel vanzelf doorgaat naar de volgende state. Als je tegen de AI speelt kom je nooit in deze state.
+      waiting_for_opponent_pieces | Bij deze state heb je het speelbord al opgestuurd, maar heeft de tegenstander dat nog niet gedaan. Je moet dan wachten tot het spel vanzelf doorgaat naar de volgende state. Als je tegen de AI speelt kom je nooit in deze state.
       my_turn | Bij deze state is het spel bezig en wacht de server tot je een move post. Zodra je een move doet komt het spel in de state 'opponent_turn', tenzij je tegen de computer speelt.
       opponent_turn | Als je een move hebt gedaan komt de game in deze state. Je moet dan wachten tot de tegenstander een zet heeft gedaan, het spel komt dan vanzelf weer in een andere state. Als je tegen de AI speelt komt de game nooit in deze state. De computer doet meteen zijn zet en je bent meteen weer aan de beurt.
-      game_over | Als van één van de spelers de vlag is gepakt is het spel afgelopen en is er iemand de winnaar. Het is niet meer mogelijk om zetten te doen.
+      game_over | Als van één van de spelers de vlag heeft gepakt is het spel afgelopen en is er iemand de winnaar. Het is niet meer mogelijk om zetten te doen.
 
       ![States](static/states.svg)
 
@@ -180,7 +180,6 @@ paths:
             $ref: "#/definitions/User"
 
   /games:
-    x-swagger-router-controller: games
     get:
       description: Haal een lijst van alle games op waar je als speler aan mee doet.
       security:
@@ -296,9 +295,9 @@ paths:
       description: |
         Krijg een lijst van alle actions sinds het spel is begonnen, van zowel jezelf als van de tegenstander. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat.
 
-        Let op dat een move niet alleen een verplaatsing van een speelstuk hoeft te zijn. Lees het hoofdstuk 'Move' voor meer informatie hierover.
+        Let op dat een action niet alleen een verplaatsing van een speelstuk hoeft te zijn. Lees het hoofdstuk 'Move' voor meer informatie hierover.
 
-        De moves zijn gesorteerd van minst recent naar meest recent. Deze API heb je alleen nodig als je voor de extra's gaat.
+        De actions zijn gesorteerd van minst recent (eerste zet) naar meest recent (laatste zet). Deze API heb je alleen nodig als je voor de extra's gaat.
       parameters:
         - name: id
           in: path
