@@ -1,7 +1,5 @@
 'use strict';
 
-var mongoose = require('mongoose');
-var User = mongoose.model('User');
 var wrap_promise = require('../../helpers/wrap_promise');
 
 module.exports = {

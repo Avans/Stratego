@@ -9,7 +9,6 @@ var Game = mongoose.model('Game');
 
 
 const API_KEY = 'TEST_API_KEY';
-const TEST_GAME_ID = 'test_game_id';
 var test_user;
 
 /**
@@ -33,7 +32,7 @@ var api_request = function() {
         delete: function(url) {
             return apify_request(request.del(apify_url(url)));
         }
-    }
+    };
 }();
 
 /**
@@ -70,7 +69,7 @@ describe('api_key checks', function() {
         res.body.should.eql({
             message: 'De API key "nonexistingapikey" is niet bekend'
         });
-    })
+    });
 });
 
 /**
@@ -82,12 +81,12 @@ describe('GET /api/games', function() {
         const res = await api_request.get('/api/games').expect(200);
 
         res.body.should.eql([]);
-      });
+    });
 
     it('should return a game with the user as player 1', async function() {
         let game = new Game();
         game.player1 = test_user._id;
-        game = await game.save()
+        game = await game.save();
 
         const res = await api_request.get('/api/games').expect(200);
 
@@ -98,7 +97,7 @@ describe('GET /api/games', function() {
         let game = new Game();
         game.player1 = 'some_player';
         game.player2 = test_user._id;
-        game = await game.save()
+        game = await game.save();
 
         const res = await api_request.get('/api/games').expect(200);
 
@@ -108,8 +107,8 @@ describe('GET /api/games', function() {
     it('shouldn\'t return games the user is not participating in', async function() {
         let game = new Game();
         game.player1 = 'some_player';
-        game.player2 = 'some_other_player'
-        game = await game.save()
+        game.player2 = 'some_other_player';
+        game = await game.save();
 
         const res = await api_request.get('/api/games').expect(200);
 
@@ -123,8 +122,9 @@ describe('GET /api/games', function() {
 describe('POST /api/games', function() {
     it('should validate the input', async function() {
         // Temporarily silence the error that this gives
+        /* eslint-disable no-console */
         const error = console.error;
-        console.error = () => {}
+        console.error = () => {};
 
         await api_request
                 .post('/api/games')
@@ -132,6 +132,7 @@ describe('POST /api/games', function() {
                 .expect(400);
 
         console.error = error;
+        /* eslint-enable no-console */
     });
 
     it('should create a new game', async function() {
@@ -194,10 +195,10 @@ describe('POST /api/games', function() {
         await game.save();
 
         // Try creating a game
-        const res = await api_request
-                            .post('/api/games')
-                            .send('{"ai": false}')
-                            .expect(400);
+        await api_request
+                    .post('/api/games')
+                    .send('{"ai": false}')
+                    .expect(400);
 
         expect(await Game.count()).to.eql(1);
     });
@@ -218,9 +219,9 @@ describe('DELETE /api/games', function() {
         await game1.save();
 
         // Delete
-        const res = await api_request
-                            .delete('/api/games')
-                            .expect(204);
+        await api_request
+                    .delete('/api/games')
+                    .expect(204);
 
         // Check that they are deleted
         const games = await Game.find();
@@ -233,9 +234,9 @@ describe('DELETE /api/games', function() {
         game.player1 = 'some_player';
         await game.save();
 
-        const res = await api_request
-                            .delete('/api/games')
-                            .expect(204);
+        await api_request
+                    .delete('/api/games')
+                    .expect(204);
 
         game = await Game.findById(game._id);
         should.exist(game);
@@ -259,9 +260,9 @@ describe('GET /api/games/:id', function() {
     });
 
     it('should send a 404 if the game doesn\'t exist', async function() {
-        const res = await api_request
-                            .get('/api/games/D2Vr5')
-                            .expect(404);
+        await api_request
+                    .get('/api/games/D2Vr5')
+                    .expect(404);
     });
 
     it('should send a 404 if the user has not joined the game', async function() {
@@ -270,9 +271,9 @@ describe('GET /api/games/:id', function() {
         game.player2 = 'some_other_player';
         game = await game.save();
 
-        const res = await api_request
-                            .get('/api/games/' + game._id)
-                            .expect(404);
+        await api_request
+                    .get('/api/games/' + game._id)
+                    .expect(404);
     });
 });
 
@@ -286,17 +287,17 @@ describe('DELETE /api/games/:id', function() {
         game.player1 = test_user._id;
         game = await game.save();
 
-        const res = await api_request
-                            .delete('/api/games/' + game._id)
-                            .expect(204);
+        await api_request
+                    .delete('/api/games/' + game._id)
+                    .expect(204);
 
         should.not.exist(await Game.findById(game._id));
     });
 
     it('should send a 404 if the game doesn\'t exist', async function() {
-        const res = await api_request
-                            .delete('/api/games/Dfk4S')
-                            .expect(404);
+        await api_request
+                    .delete('/api/games/Dfk4S')
+                    .expect(404);
     });
 });
 
@@ -333,7 +334,7 @@ describe('GET /api/games/:id/actions', function() {
             type: 'reveal_piece',
             square: {row: 0, column: 0},
             piece: 'B'
-        }])
+        }]);
     });
 
     it('should give a rotated perspective for player 2', async function() {
@@ -392,7 +393,7 @@ describe('POST /api/games/:id/start_board', function() {
         game.state = Game.STATE.WAITING_FOR_PIECES;
         game = await game.save();
 
-        const res = await api_request
+        await api_request
             .post('/api/games/' + game._id + '/start_board')
             .send(board)
             .expect(200);
@@ -501,7 +502,7 @@ describe('POST /api/games/:id/actions', function() {
         game.markModified('board');
         await game.save();
 
-        const res = await api_request
+        await api_request
             .post('/api/games/' + game._id + '/actions')
             .send({
                 square: {row: 0, column: 0},

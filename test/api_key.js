@@ -1,4 +1,3 @@
-const expect = require('chai').expect;
 const should = require('should');
 const app = require('../app');
 const request = require('supertest')(app);
@@ -18,9 +17,9 @@ describe('api_key', function() {
 
     beforeEach(async function() {
         profile = {
-            nickname: "Test User",
-            id: "test_id"
-        }
+            nickname: 'Test User',
+            id: 'test_id'
+        };
     });
 
     let test_user;
@@ -39,7 +38,7 @@ describe('api_key', function() {
             should.not.exist(err);
             userId.should.equal('test_id');
             done();
-        })
+        });
     });
 
     it('should find the user for deserializeUser()', function(done) {
@@ -76,7 +75,7 @@ describe('api_key', function() {
     it('GET /api_key should redirect if logged out', async function() {
         await request
             .get('/api_key')
-            .expect('Location', '/api_key/login')
+            .expect('Location', '/api_key/login');
     });
 
 });

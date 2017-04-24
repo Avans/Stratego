@@ -1,6 +1,4 @@
-var should = require('should');
 var expect = require('chai').expect;
-var app = require('../../app');
 var ValidationError = require('../../helpers/ValidationError');
 
 var mongoose = require('mongoose');
@@ -30,7 +28,7 @@ describe('Game.outputForUser()', function() {
                       [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
                       [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']];
         game.start_board = JSON.parse(JSON.stringify(game.board)); // Simple copy
-        game.player1s_turn = true
+        game.player1s_turn = true;
         game.state = Game.STATE.STARTED;
     });
 
@@ -58,7 +56,7 @@ describe('Game.outputForUser()', function() {
         game.winner = 'test_user';
         game.state = Game.STATE.GAME_OVER;
         output = game.outputForUser('test_user');
-        output.winner.should.equal('test_user')
+        output.winner.should.equal('test_user');
     });
 
     it('should give state information', async function() {
@@ -93,30 +91,30 @@ describe('Game.outputForUser()', function() {
         let output = game.outputForUser('test_user');
 
         expect(output.board).to.deep.equal(
-                     [['4',   'O',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']]);
+            [['4',   'O',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ']]);
 
         // Should give rotated view for player 2
         output = game.outputForUser('someone_else');
         expect(output.board).to.deep.equal(
-                     [[' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
-                      [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '6',   'O']]);
+            [[' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' '],
+             [' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   '6',   'O']]);
     });
 
     it('shouldn\'t give board information if the game hasn\'t started yet', async function() {
@@ -131,7 +129,7 @@ describe('Game.outputForUser()', function() {
         output.hasOwnProperty('start_board').should.be.true();
 
         // Don't add it when the game hasn't started yet
-        game.start_board = undefined
+        game.start_board = undefined;
         output = game.outputForUser('test_user');
         output.hasOwnProperty('start_board').should.be.false();
     });
@@ -144,11 +142,10 @@ describe('Game.validateStartBoard()', function() {
     let board;
 
     function resetCorrectBoard() {
-        board =
-            [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
-             ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],
-             ['7', 'B', '4', '8', '6', '4', '3', '8', '7', '6'],
-             ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
+        board = [['7', 'B', '5', '2', '9', '9', '1', '8', '9', 'B'],
+                 ['B', '7', '9', 'S', '4', '5', '8', '5', '3', '9'],
+                 ['7', 'B', '4', '8', '6', '4', '3', '8', '7', '6'],
+                 ['B', 'F', 'B', '5', '9', '6', '6', '9', '9', '8']];
     }
 
     beforeEach(async function() {
@@ -185,7 +182,7 @@ describe('Game.validateStartBoard()', function() {
         Game.validateStartBoard.bind(Game, board).should.throw(ValidationError);
 
         resetCorrectBoard();
-        board[3][1] = '1' // Overwrite flag
+        board[3][1] = '1'; // Overwrite flag
         Game.validateStartBoard.bind(Game, board).should.throw(ValidationError);
 
         // Swap two pieces
@@ -282,9 +279,9 @@ describe('Game.checkValidMove()', function() {
     });
 
     it('should catch a corrupt board', async function() {
-      game.board[0][0] = '0:4';
-      game.checkValidMove.bind(game, 0, 0, 0, 1).should.throw(Error);
-    })
+        game.board[0][0] = '0:4';
+        game.checkValidMove.bind(game, 0, 0, 0, 1).should.throw(Error);
+    });
 });
 
 describe('Game.getAIMove()', function() {
@@ -380,20 +377,20 @@ describe('Game.doMove()', function() {
         game.board[0][1].should.equal('1:4');
 
         expect(actions).to.deep.equal([
-            { type: 'reveal_piece',
-              square: {row: 0, column: 0},
-              piece: '4'
+            {   type: 'reveal_piece',
+                square: {row: 0, column: 0},
+                piece: '4'
             },
-            { type: 'reveal_piece',
-              square: {row: 0, column: 1},
-              piece: '6'
+            {   type: 'reveal_piece',
+                square: {row: 0, column: 1},
+                piece: '6'
             },
-            { type: 'destroy_piece',
-              square: {row: 0, column: 1}
+            {   type: 'destroy_piece',
+                square: {row: 0, column: 1}
             },
-            { type: 'move_piece',
-              square: {row: 0, column: 0},
-              square_to: {row: 0, column: 1}
+            {   type: 'move_piece',
+                square: {row: 0, column: 0},
+                square_to: {row: 0, column: 1}
             }
         ]);
     });
@@ -407,19 +404,19 @@ describe('Game.doMove()', function() {
 
 
         expect(actions).to.deep.equal([
-            { type: 'reveal_piece',
-              square: { column: 0, row: 0 },
-              piece: '6'
+            {   type: 'reveal_piece',
+                square: { column: 0, row: 0 },
+                piece: '6'
             },
-            { type: 'reveal_piece',
-              square: { column: 1, row: 0 },
-              piece: '6'
+            {   type: 'reveal_piece',
+                square: { column: 1, row: 0 },
+                piece: '6'
             },
-            { type: 'destroy_piece',
-              square: { column: 1, row: 0 }
+            {   type: 'destroy_piece',
+                square: { column: 1, row: 0 }
             },
-            { type: 'destroy_piece',
-              square: { column: 0, row: 0 }
+            {   type: 'destroy_piece',
+                square: { column: 0, row: 0 }
             }]);
     });
 

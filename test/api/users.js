@@ -1,4 +1,3 @@
-var should = require('should');
 var expect = require('chai').expect;
 var server = require('../../app');
 var request = require('supertest')(server);
@@ -8,7 +7,6 @@ var User = mongoose.model('User');
 
 
 const API_KEY = 'TEST_API_KEY';
-const TEST_GAME_ID = 'test_game_id';
 var test_user;
 
 /**
@@ -32,7 +30,7 @@ var api_request = function() {
         delete: function(url) {
             return apify_request(request.del(apify_url(url)));
         }
-    }
+    };
 }();
 
 /**

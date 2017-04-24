@@ -60,7 +60,7 @@ async function postGames(req, res) {
             if(user_already_has_waiting_game) {
                 await game.remove();
 
-                res.status(400).json({message: "You already have a game that is waiting for an opponent"});
+                res.status(400).json({message: 'You already have a game that is waiting for an opponent'});
                 return;
             }
         }

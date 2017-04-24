@@ -9,8 +9,8 @@ function PieceType(code, name, relative_value, number_per_player) {
     this.number_per_player = number_per_player;
 
     this.toString = function() {
-        return util.format("%s ('%s')", name, code);
-    }
+        return util.format('%s (\'%s\')', name, code);
+    };
 
     this.canBeat = function(otherPieceType, isInitiating) {
         // Spy can beat Marshal if it attacks
@@ -39,7 +39,7 @@ function PieceType(code, name, relative_value, number_per_player) {
         }
 
         return false;
-    }
+    };
 
     Object.freeze(this);
 }
@@ -51,12 +51,12 @@ PieceType.getByCode = function(code) {
         }
     }
     return null;
-}
+};
 
-PieceType.getCodes = function(code) {
+PieceType.getCodes = function() {
     return Object.values(PieceType.TYPES)
                  .map((piecetype) => piecetype.code);
-}
+};
 
 PieceType.TYPES = Object.freeze({
     BOMB: new PieceType('B', 'Bomb', 11, 6),

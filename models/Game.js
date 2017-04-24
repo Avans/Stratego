@@ -6,46 +6,48 @@ const HttpError = require('../helpers/HttpError');
 const ValidationError = require('../helpers/ValidationError');
 const PieceType = require('./PieceType');
 
-const coordinateType = { row: {type: Number, min: 0, max: 9, required: true},
-                         column: {type: Number, min: 0, max: 9, required: true} };
+const coordinateType = {
+    row: {type: Number, min: 0, max: 9, required: true},
+    column: {type: Number, min: 0, max: 9, required: true}
+};
 
 /**
  * Game
  */
 var gameSchema = new mongoose.Schema({
-  _id: { type: String, required: true, index: true, unique: true, default: () => randomstring.generate(5) },
-  player1: { type: String, required: true, ref: 'User'},
-  player2: { type: String, ref: 'User'},
-  winner: { type: String, ref: 'User'},
-  state: { type: String, required: true, default: 'waiting_for_an_opponent', enum: [
+    _id: { type: String, required: true, index: true, unique: true, default: () => randomstring.generate(5) },
+    player1: { type: String, required: true, ref: 'User'},
+    player2: { type: String, ref: 'User'},
+    winner: { type: String, ref: 'User'},
+    state: { type: String, required: true, default: 'waiting_for_an_opponent', enum: [
         'waiting_for_an_opponent',
         'waiting_for_pieces',
         'started',
         'game_over',
-        ]},
-  player1s_turn: {type: String, required: true, type: Boolean, default: true},
-  player1_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
-  player2_set_up_pieces: {type: String, required: true, type: Boolean, default: false},
-  start_board: {
-    type: [[String]],
-    validate: [validateBoard, "{PATH} is not a valid board"],
-    default: undefined
-  },
-  board: {
-    type: [[String]],
-    validate: [validateBoard, "{PATH} is not a valid board"],
-    default: [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-              [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
-  },
-  actions: {type: [
+    ]},
+    player1s_turn: {type: Boolean, required: true, default: true},
+    player1_set_up_pieces: {type: Boolean, required: true, default: false},
+    player2_set_up_pieces: {type: Boolean, required: true, default: false},
+    start_board: {
+        type: [[String]],
+        validate: [validateBoard, '{PATH} is not a valid board'],
+        default: undefined
+    },
+    board: {
+        type: [[String]],
+        validate: [validateBoard, '{PATH} is not a valid board'],
+        default: [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+                  [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    },
+    actions: {type: [
         {
             type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
             square: {type: coordinateType, required: true},
@@ -56,11 +58,11 @@ var gameSchema = new mongoose.Schema({
 });
 
 gameSchema.statics.STATE = {
-  WAITING_FOR_AN_OPPONENT: 'waiting_for_an_opponent',
-  WAITING_FOR_PIECES: 'waiting_for_pieces',
-  STARTED: 'started',
-  GAME_OVER: 'game_over'
-}
+    WAITING_FOR_AN_OPPONENT: 'waiting_for_an_opponent',
+    WAITING_FOR_PIECES: 'waiting_for_pieces',
+    STARTED: 'started',
+    GAME_OVER: 'game_over'
+};
 
 /**
  * Find games involving a User
@@ -80,16 +82,16 @@ gameSchema.statics.findByIdAndUser = async function(id, user) {
     } else {
         return games[0];
     }
-}
+};
 
 gameSchema.methods.setState = function(state) {
     this.state = state;
     this.notifyStateChange();
-}
+};
 
 gameSchema.methods.notifyStateChange = function() {
     // TODO: emit with sockets
-}
+};
 
 /**
  * Check if the board is a valid Stratego start board (4x10 array with strings)
@@ -120,7 +122,7 @@ gameSchema.statics.validateStartBoard = function(start_board) {
             const piece = row[column_i];
 
             if(typeof piece !== 'string') {
-                throw new ValidationError(util.format('Start board index %d,%d: expected a string but got %s', row_i, column_i, piece))
+                throw new ValidationError(util.format('Start board index %d,%d: expected a string but got %s', row_i, column_i, piece));
             }
 
             if(PieceType.getByCode(piece) === null) {
@@ -154,7 +156,7 @@ gameSchema.statics.validateStartBoard = function(start_board) {
             throw new ValidationError(util.format('The %s piece type should appear %d times, but seems to appear %d times on the start board', piece_type, piece_type.number_per_player, number_of_appearances));
         }
     }
-}
+};
 
 /**
  * Get a rotated version of the board
@@ -164,18 +166,18 @@ gameSchema.statics.getRotatedBoard = function(b) {
     board.map((v) => v.reverse());
     board.reverse();
     return board;
-}
+};
 
 gameSchema.statics.getAIStartBoard = function() {
     return [['F', 'B', '5', '9', '1', 'S', '6', '8', '8', '9'],
             ['B', 'B', '9', '5', '3', '2', '8', '7', '9', '9'],
             ['7', '5', '4', '8', '6', '4', '4', '8', '3', '7'],
             ['B', '7', 'B', '5', '9', '6', '6', '9', '9', 'B']];
-}
+};
 
 gameSchema.methods.isVsAI = function() {
     return this.player2 === 'ai';
-}
+};
 
 /**
  * Add the start board
@@ -223,7 +225,7 @@ gameSchema.methods.setUpStartBoard = function(user_id, start_board) {
 
         this.player2_set_up_pieces = true;
     }
-}
+};
 
 gameSchema.methods.getPieceType = function(x, y) {
     const value = this.board[y][x];
@@ -232,7 +234,7 @@ gameSchema.methods.getPieceType = function(x, y) {
     }
 
     return PieceType.getByCode(value[2]);
-}
+};
 
 gameSchema.methods.getPlayerNumberOfPiece = function(x, y) {
     const value = this.board[y][x];
@@ -249,14 +251,14 @@ gameSchema.methods.getPlayerNumberOfPiece = function(x, y) {
         // This should never happen
         throw new Error(util.format('Invalid board value: %f', value));
     }
-}
+};
 
 /**
  * Check if a coordinate is water
  */
 gameSchema.methods.isWater = function(x, y) {
     return (y == 4 || y == 5) && (x == 2 || x == 3 || x == 6 || x == 7);
-}
+};
 
 /**
  * Check if the move is valid in Stratego
@@ -308,20 +310,20 @@ gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
         throw new ValidationError(util.format('You can\'t move into %j, this is a water square', to));
     }
 
+    function checkSpaceIsFree(x, y) {
+        const space = {row: y, column: x};
+
+        if(this.isWater(x, y)) {
+            throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a water piece at %j', from, to, space));
+        }
+        const piece = this.getPieceType(x, y);
+        if(piece !== null) {
+            throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a %s at %j', from, to, piece, space));
+        }
+    }
 
     if(pieceType === PieceType.TYPES.SCOUT) {
         // Check that the scout doesn't jump over water or other pieces
-        function checkSpaceIsFree(x, y) {
-            const space = {row: y, column: x};
-
-            if(this.isWater(x, y)) {
-                throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a water piece at %j', from, to, space));
-            }
-            const piece = this.getPieceType(x, y);
-            if(piece !== null) {
-                throw new ValidationError(util.format('The scout can\t move from %j to %j because there is a %s at %j', from, to, piece, space));
-            }
-        }
 
         if(from_y === to_y) {
             // Horizontal check
@@ -346,7 +348,7 @@ gameSchema.methods.checkValidMove = function(from_x, from_y, to_x, to_y) {
     }
 
     // Other: Check that move is at most 1 far
-}
+};
 
 gameSchema.methods.getPlayerNumber = function(user) {
     if(user === this.player1) {
@@ -356,7 +358,7 @@ gameSchema.methods.getPlayerNumber = function(user) {
         return 2;
     }
     return null;
-}
+};
 
 gameSchema.methods.getPlayerTurn = function() {
     if(this.player1s_turn) {
@@ -364,7 +366,7 @@ gameSchema.methods.getPlayerTurn = function() {
     } else {
         return 2;
     }
-}
+};
 
 /**
  * Get a move for the AI to do
@@ -405,7 +407,7 @@ gameSchema.methods.getAIMove = function() {
 
     const random_move = valid_moves[Math.floor(Math.random() * valid_moves.length)];
     return random_move;
-}
+};
 
 /**
  * Execute a move on the board
@@ -422,15 +424,15 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
 
     // Game should be started
     switch(this.state) {
-        case gameSchema.statics.STATE.STARTED:
-            // This is good
-            break;
+    case gameSchema.statics.STATE.STARTED:
+        // This is good
+        break;
 
-        case gameSchema.statics.STATE.GAME_OVER:
-            throw new ValidationError('Cannot do a move, the game is already finished');
+    case gameSchema.statics.STATE.GAME_OVER:
+        throw new ValidationError('Cannot do a move, the game is already finished');
 
-        default:
-            throw new ValidationError('Cannot do a move, the game hasn\'t started yet');
+    default:
+        throw new ValidationError('Cannot do a move, the game hasn\'t started yet');
     }
 
     // Check if the user has the turn
@@ -516,7 +518,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     }
 
     return actions;
-}
+};
 
 /**
  *
@@ -547,7 +549,7 @@ gameSchema.methods.outputForUser = function(user) {
         if(this.getPlayerTurn() === playerNumber) {
             returnValue.state = 'my_turn';
         } else {
-            returnValue.state = 'opponent_turn'
+            returnValue.state = 'opponent_turn';
         }
     } else {
         if(this.state === gameSchema.statics.STATE.WAITING_FOR_PIECES) {
@@ -629,7 +631,7 @@ gameSchema.methods.outputActionsForUser = function(user, actions_original) {
     }
 
     return actions;
-}
+};
 
 
 function validateBoard() {

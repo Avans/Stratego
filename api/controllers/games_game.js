@@ -1,11 +1,9 @@
 'use strict';
 
 var mongoose = require('mongoose');
-var User = mongoose.model('User');
 var Game = mongoose.model('Game');
 
 var wrap_promise = require('../../helpers/wrap_promise');
-var HttpError = require('../../helpers/HttpError');
 
 module.exports = {
     get: wrap_promise(getGame),
