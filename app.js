@@ -1,6 +1,7 @@
 'use strict';
 
 var swagger = require('swagger-express-middleware');
+var http = require('http');
 var express = require('express');
 var session = require('express-session');
 var YAML = require('yamljs');
@@ -90,5 +91,9 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
         }
     });
 
-    app.listen(process.env.PORT || 3000);
+    const server = http.createServer(app);
+
+    const socket = require('./socket');
+    socket.init(server);
+    server.listen(process.env.PORT || 3000);
 });

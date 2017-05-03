@@ -90,7 +90,8 @@ gameSchema.methods.setState = function(state) {
 };
 
 gameSchema.methods.notifyStateChange = function() {
-    // TODO: emit with sockets
+    const socket = require('../socket');
+    socket.sendStateChange(this);
 };
 
 /**
