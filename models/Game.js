@@ -47,7 +47,7 @@ var gameSchema = new mongoose.Schema({
                   [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
                   [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
     },
-    actions: {type: [
+    moves: {type: [
         {
             type: {type: String, required: true, enum: ['move', 'attack']},
             square: {type: coordinateType, required: true},
@@ -452,42 +452,42 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         throw new ValidationError(util.format('The piece at %j cannot be moved by %s, it is controlled by the other user', from, user));
     }
 
-    const action = {
+    const move = {
         type: 'move',
         square: from,
         square_to: to
     };
 
-    let move = true;
+    let doMove = true;
 
     // Do a battle (if landing on opponent piece)
     const pieceTypeMoving = this.getPieceType(from_x, from_y);
     const pieceTypeAtTarget = this.getPieceType(to_x, to_y);
     if(pieceTypeAtTarget !== null) {
 
-        // Upgrade action to attack
-        action.type = 'attack';
-        action.attacker = pieceTypeMoving.code;
-        action.defender = pieceTypeAtTarget.code;
-        action.defender_destroyed = false;
-        action.attacker_destroyed = false;
+        // Upgrade move to attack
+        move.type = 'attack';
+        move.attacker = pieceTypeMoving.code;
+        move.defender = pieceTypeAtTarget.code;
+        move.defender_destroyed = false;
+        move.attacker_destroyed = false;
 
         // Destroy target piece
         if(pieceTypeMoving.canBeat(pieceTypeAtTarget, true)) {
-            action.defender_destroyed = true;
+            move.defender_destroyed = true;
             this.board[to_y][to_x] = ' ';
         }
 
         // Destroy moving piece if it loses (or draws)
         if(pieceTypeAtTarget.canBeat(pieceTypeMoving, false)) {
-            action.attacker_destroyed = true;
+            move.attacker_destroyed = true;
             this.board[from_y][from_x] = ' ';
-            move = false;
+            doMove = false;
         }
     }
 
     // Do the move
-    if(move) {
+    if(doMove) {
         this.board[to_y][to_x] = this.board[from_y][from_x];
         this.board[from_y][from_x] = ' ';
         this.markModified('board');
@@ -503,10 +503,10 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         this.state = gameSchema.statics.STATE.GAME_OVER;
     }
 
-    // Save action to history
-    this.actions.push(action);
+    // Save move to history
+    this.moves.push(move);
 
-    return action;
+    return move;
 };
 
 /**
@@ -595,28 +595,28 @@ gameSchema.methods.outputForUser = function(user) {
 };
 
 /**
- * Show actions from a users perspective
+ * Show moves from a users perspective
  */
-gameSchema.methods.outputActionsForUser = function(user, actions_original) {
-    // Copy actions
-    const actions = JSON.parse(JSON.stringify(actions_original));
+gameSchema.methods.outputMovesForUser = function(user, moves_original) {
+    // Copy moves
+    const moves = JSON.parse(JSON.stringify(moves_original));
 
-    // Show the actions from the rotated point of view for player 2
+    // Show the moves from the rotated point of view for player 2
     if(this.getPlayerNumber(user) === 2) {
-        for(let i = 0; i < actions.length; i++) {
-            actions[i].square.row = 9 - actions[i].square.row;
-            actions[i].square.column = 9 - actions[i].square.column;
-            actions[i].square_to.row = 9 - actions[i].square_to.row;
-            actions[i].square_to.column = 9 - actions[i].square_to.column;
+        for(let i = 0; i < moves.length; i++) {
+            moves[i].square.row = 9 - moves[i].square.row;
+            moves[i].square.column = 9 - moves[i].square.column;
+            moves[i].square_to.row = 9 - moves[i].square_to.row;
+            moves[i].square_to.column = 9 - moves[i].square_to.column;
         }
     }
 
     // Delete the _id property that mongoose adds
-    for(let i = 0; i < actions.length; i += 1) {
-        delete actions[i]['_id'];
+    for(let i = 0; i < moves.length; i += 1) {
+        delete moves[i]['_id'];
     }
 
-    return actions;
+    return moves;
 };
 
 

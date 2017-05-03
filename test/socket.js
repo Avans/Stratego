@@ -63,7 +63,7 @@ describe('socket.io', function() {
 
     // should not receive messages for other games
 
-    // Should receive actions
+    // Should receive moves
 
 
 });

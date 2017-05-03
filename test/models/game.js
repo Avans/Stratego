@@ -337,17 +337,17 @@ describe('Game.doMove()', function() {
     });
 
     it('should execute a valid player 1 move', async function() {
-        const action = game.doMove('test_user', 0, 0, 0, 1);
+        const move = game.doMove('test_user', 0, 0, 0, 1);
 
-        // Expect correct actions returned
-        expect(action).to.deep.equal({
+        // Expect correct move returned
+        expect(move).to.deep.equal({
             type: 'move',
             square: { column: 0, row: 0 },
             square_to: { column: 0, row: 1 }
         });
 
-        // Expect actions to be added to history
-        game.actions.length.should.equal(1);
+        // Expect moves to be added to history
+        game.moves.length.should.equal(1);
 
         // Expect move on the board to be completed
         game.board[0][0].should.equal(' ');
@@ -370,12 +370,12 @@ describe('Game.doMove()', function() {
 
     // should execute an attack
     it('should execute an attack', async function() {
-        const action = game.doMove('test_user', 0, 0, 1, 0); // Attack the 2:6 piece and win
+        const move = game.doMove('test_user', 0, 0, 1, 0); // Attack the 2:6 piece and win
 
         game.board[0][0].should.equal(' ');
         game.board[0][1].should.equal('1:4');
 
-        expect(action).to.deep.equal(
+        expect(move).to.deep.equal(
             {   type: 'attack',
                 square: {row: 0, column: 0},
                 square_to: {row: 0, column: 1},
@@ -389,13 +389,13 @@ describe('Game.doMove()', function() {
 
     it('should destroy both pieces if they are equal', async function() {
         game.board[0][0] = '1:6';
-        const action = game.doMove('test_user', 0, 0, 1, 0);
+        const move = game.doMove('test_user', 0, 0, 1, 0);
 
         game.board[0][0].should.equal(' ');
         game.board[0][1].should.equal(' ');
 
 
-        expect(action).to.deep.equal(
+        expect(move).to.deep.equal(
             {   type: 'attack',
                 square: {row: 0, column: 0},
                 square_to: {row: 0, column: 1},

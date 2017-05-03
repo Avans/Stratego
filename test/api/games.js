@@ -301,13 +301,13 @@ describe('DELETE /api/games/:id', function() {
     });
 });
 
-describe('GET /api/games/:id/actions', function() {
+describe('GET /api/games/:id/moves', function() {
     let game;
 
     beforeEach(async function() {
         game = new Game();
         game.player1 = test_user._id;
-        game.actions = [{
+        game.moves = [{
             type: 'move',
             square: {row: 0, column: 0},
             square_to: {row: 1, column: 0}
@@ -324,9 +324,9 @@ describe('GET /api/games/:id/actions', function() {
         game = await game.save();
     });
 
-    it('should give the list of actions for a game', async function() {
+    it('should give the list of moves for a game', async function() {
         const res = await api_request
-            .get('/api/games/' + game._id + '/actions')
+            .get('/api/games/' + game._id + '/moves')
             .expect(200);
 
         expect(res.body).to.deep.equal([{
@@ -351,7 +351,7 @@ describe('GET /api/games/:id/actions', function() {
         game = await game.save();
 
         const res = await api_request
-            .get('/api/games/' + game._id + '/actions')
+            .get('/api/games/' + game._id + '/moves')
             .expect(200);
 
         expect(res.body).to.deep.equal([{
@@ -417,7 +417,7 @@ describe('POST /api/games/:id/start_board', function() {
     });
 });
 
-describe('POST /api/games/:id/actions', function() {
+describe('POST /api/games/:id/moves', function() {
     let game;
 
     beforeEach(async function() {
@@ -441,15 +441,15 @@ describe('POST /api/games/:id/actions', function() {
 
     it('should perform and save a move on the board', async function() {
         const res = await api_request
-            .post('/api/games/' + game._id + '/actions')
+            .post('/api/games/' + game._id + '/moves')
             .send({
                 square: {row: 0, column: 0},
                 square_to: {row: 1, column: 0},
             })
             .expect(200);
 
-        // Expect the executed actions to be returned
-        expect(res.body.actions).to.deep.equal([
+        // Expect the executed moves to be returned
+        expect(res.body.moves).to.deep.equal([
             {
                 type: 'move',
                 square: {column: 0, row: 0},
@@ -473,15 +473,15 @@ describe('POST /api/games/:id/actions', function() {
         game = await game.save();
 
         const res = await api_request
-            .post('/api/games/' + game._id + '/actions')
+            .post('/api/games/' + game._id + '/moves')
             .send({
                 square: {row: 9, column: 7},
                 square_to: {row: 8, column: 7},
             })
             .expect(200);
 
-        // Expect the actions to be from player2's perspective
-        expect(res.body.actions).to.deep.equal([
+        // Expect the moves to be from player2's perspective
+        expect(res.body.moves).to.deep.equal([
             {
                 type: 'move',
                 square: {row: 9, column: 7},
@@ -495,13 +495,13 @@ describe('POST /api/games/:id/actions', function() {
         await game.save();
 
         const res = await api_request
-            .post('/api/games/' + game._id + '/actions')
+            .post('/api/games/' + game._id + '/moves')
             .send({
                 square: {row: 0, column: 0},
                 square_to: {row: 1, column: 0},
             })
             .expect(200);
-        res.body.actions.length.should.equal(2);
+        res.body.moves.length.should.equal(2);
 
         // Player 1 should have the turn again immediately
         game = await Game.findById(game._id);
@@ -515,7 +515,7 @@ describe('POST /api/games/:id/actions', function() {
         await game.save();
 
         await api_request
-            .post('/api/games/' + game._id + '/actions')
+            .post('/api/games/' + game._id + '/moves')
             .send({
                 square: {row: 0, column: 0},
                 square_to: {row: 1, column: 0},
@@ -533,7 +533,7 @@ describe('POST /api/games/:id/actions', function() {
         await game.save();
 
         await api_request
-            .post('/api/games/' + game._id + '/actions')
+            .post('/api/games/' + game._id + '/moves')
             .send({
                 square: {row: 0, column: 0},
                 square_to: {row: 1, column: 0},

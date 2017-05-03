@@ -67,8 +67,8 @@ swagger('./api/swagger/swagger.yaml', app, function(err, swagger) {
     app.get('/api/games/:id', games_game.get);
     app.delete('/api/games/:id', games_game.delete);
     app.post('/api/games/:id/start_board', games_game.post_start_board);
-    app.get('/api/games/:id/actions', games_game.get_actions);
-    app.post('/api/games/:id/actions', games_game.post_actions);
+    app.get('/api/games/:id/moves', games_game.get_moves);
+    app.post('/api/games/:id/moves', games_game.post_moves);
 
     var games = require('./api/controllers/games');
     app.get('/api/games', games.get);

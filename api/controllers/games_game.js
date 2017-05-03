@@ -9,8 +9,8 @@ module.exports = {
     get: wrap_promise(getGame),
     delete: wrap_promise(deleteGame),
     post_start_board: wrap_promise(postStartBoard),
-    get_actions: wrap_promise(getActions),
-    post_actions: wrap_promise(postActions),
+    get_moves: wrap_promise(getMoves),
+    post_moves: wrap_promise(postMoves),
 };
 
 /**
@@ -53,19 +53,19 @@ async function postStartBoard(req, res) {
     res.json(game.outputForUser(req.user._id));
 }
 
-// Get actions
-async function getActions(req, res) {
+// Get moves
+async function getMoves(req, res) {
     let game = await Game.findByIdAndUser(req.params.id, req.user);
 
-    const actions = game.outputActionsForUser(req.user._id, game.actions);
+    const moves = game.outputMovesForUser(req.user._id, game.moves);
 
-    res.json(actions);
+    res.json(moves);
 }
 
 /**
  * Post a start board
  */
-async function postActions(req, res) {
+async function postMoves(req, res) {
     let game = await Game.findByIdAndUser(req.params.id, req.user);
 
     let from_x = req.body.square.column;
@@ -81,27 +81,27 @@ async function postActions(req, res) {
         to_y = 9 - to_y;
     }
 
-    const action = game.doMove(
+    const move = game.doMove(
         req.user._id,
         from_x,
         from_y,
         to_x,
         to_y);
 
-    const actions = [action];
+    const moves = [move];
 
     if(game.isVsAI() && game.state !== Game.STATE.GAME_OVER) {
         const ai_move = game.getAIMove();
 
         // Don't do anything if the AI has no legal moves
         if(ai_move !== null) {
-            const otherAction = game.doMove('ai',
+            const otherMove = game.doMove('ai',
                 ai_move.square.column,
                 ai_move.square.row,
                 ai_move.square_to.column,
                 ai_move.square_to.row);
 
-            actions.push(otherAction);
+            moves.push(otherMove);
         } else {
             game.player1s_turn = true;
         }
@@ -111,6 +111,6 @@ async function postActions(req, res) {
 
     res.json({
         game: game.outputForUser(req.user._id),
-        actions: game.outputActionsForUser(req.user._id, actions)
+        moves: game.outputMovesForUser(req.user._id, moves)
     });
 }
