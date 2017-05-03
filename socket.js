@@ -35,10 +35,15 @@ module.exports = {
     },
 
     sendMove: function(game, move) {
-        io.to(game.player1).emit('move', move);
+        const data = {
+            game_id: game._id,
+            move: move
+        };
+
+        io.to(game.player1).emit('move', data);
 
         if(game.player2) {
-            io.to(game.player2).emit('move', move);
+            io.to(game.player2).emit('move', data);
         }
     }
 }

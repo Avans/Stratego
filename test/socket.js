@@ -75,7 +75,7 @@ describe('socket.io', function() {
         });
 
         client.on('move', function(theMove) {
-            expect(move).to.deep.eql(theMove);
+            expect({game_id: game._id, move: move}).to.deep.eql(theMove);
             client.disconnect();
             done();
         });
