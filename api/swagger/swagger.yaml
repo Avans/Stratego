@@ -47,7 +47,7 @@ info:
       * Als de spion de maarschalk pakt wint de spion (let op: als de maarschalk de spion pakt wint de maarschalk!)
       * Als de bom wordt gepakt wint de bom, met uitzondering van de mineur die het wint van de bom.
 
-      Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden in de API aangegeven met de code 'O' (van 'opponent'). Als je ze probeert te pakken krijg je via de actions wel even te zien welk type stuk je probeert te pakken.
+      Je krijgt als speler de stukken van de tegenspeler niet te zien, deze worden in de API aangegeven met de code 'O' (van 'opponent'). Als je ze probeert te pakken krijg je via de moves wel even te zien welk type stuk je probeert te pakken.
 
       Alle spelregels zijn al geïmplementeerd in de server, je hoeft voor deze opdracht dus alleen maar de GUI te maken die het mogelijk maakt om in de browser een potje te spelen. Je moet in je code wel checken op ongeldige zetten, val de server dus niet lastig met zetten die niet uit te voeren zijn!
 
@@ -116,44 +116,35 @@ info:
 
       De vakjes met een sterretje erbij zijn water, op deze plekken kan nooit een speelstuk komen te staan.
 
-      ## Actions
-      In de API komt het begrip actions naar voren. Dit zijn alle acties die gebeuren tijdens een potje Stratego. Denk hierbij aan: een speelstuk verplaatsen, een speelstuk te zien krijgen van de tegenstander of een speelstuk verwijderen van het bord omdat die geslagen is.
+      ## Moves
+      In de API komt het begrip moves naar voren. Dit zijn alle zetten die gebeuren tijdens een potje Stratego. Denk hierbij aan een speelstuk verplaatsen of een speelstuk aanvallen
 
-      Actions heb je alleen nodig als je voor de extra features gaat (animaties, bijhouden welke speelstukken van de vijand waar staan, historie laten zien). Ga je alleen voor de voldoende, dan hoef je alleen te weten hoe je een move doet en kan je alles hieronder negeren.
+      De /moves GET API heb je alleen nodig als je voor de extra features gaat (animaties, bijhouden welke speelstukken van de vijand waar staan, historie laten zien). Ga je alleen voor de voldoende, dan hoef je alleen te weten hoe je een move doet en kan je alles hieronder negeren.
 
-      Alles wat er gebeurd tijdens een potje Stratego wordt bijgehouden in een lijst van actions. Je zou als je wil kunnen beginnen met het startbord (staat in het Game object), alle actions die er zijn er op uitvoeren en uitkomen bij hoe het huidige bord er uit ziet.
+      Alles wat er gebeurd tijdens een potje Stratego wordt bijgehouden in een lijst van moves. Je zou als je wil kunnen beginnen met het startbord (staat in het Game object), alle moves die er zijn er op uitvoeren en uitkomen bij hoe het huidige bord er uit ziet.
 
-      Er zijn drie soorten actions, te herkennen aan de property `'type'`: `'reveal_piece'`, `'remove_piece'` of `'move_piece'`.
+      Er zijn twee soorten moves, te herkennen aan de property `'type'`: `'move'` en `'attack'`.
 
-      Een action heeft ook altijd de property `'square'`, maar die betekent voor elk type net iets anders.
-
-      ### Reveal
-
-      Als je een speelstuk van de tegenstander slaat door er op te gaan staan krijg je te weten welk type speelstuk dit is (Maarschalk, Bom, etc). Dit kan je in jouw spel gebruiken om te laten zien welk type het speelstuk van de tegenstander was voordat je speelstukken van het bord haalt.
-
-      Als extraatje kan je als jouw stuk verliest van die van de tegenstander het speelstuk van de tegenstander met deze informatie markeren. Zo maak je het de speler makkelijker zodat hij deze het type van het speelstuk waarvan hij net heeft verloren niet meer hoeft te onthouden.
-
-      De `'square'` eigenschap is het coordinaat van het speelstuk van de tegenstander dat je te weten komt.
-
-      In de `'piece'` eigenschap van de action staat welk type dat speelstuk is.
-
-      ### Destroy
-
-      Deze actie staat voor een speelstuk dat van het bord moet worden verwijderd omdat het verloren heeft in een aanval.
-
-      De `square` eigenschap geeft de positie aan van het verliezende speelstuk *voordat* het heeft bewogen.
-
-      Deze actie is vooral bedoeld als je een animatie wil doen met het verliezende speelstuk.
+      Een move heeft altijd de property `'square'` en `'square_to'`. Dit is waar
 
       ### Move
 
-      Het laatste type action is de move. Deze kan je gebruiken om een animatie te doen van een speelstuk over het bord. De `'square'` eigenschap is het coordinaat van het stuk dat gaat bewegen. De `'square_to'` eigenschap is het coordinaat waar het heen beweegt.
+      Een gewone move (`type: 'move'`) gebeurt als er een speelstuk verplaatst wordt zonder dat deze op een ander speelstuk eindigt. In dit geval heeft de move geen extra eigenschappen.
 
-      De acties staan per aanval altijd in de volgorde:
+      ### Attack
 
-      1. reveal
-      * destroy
-      * move
+      Als een speelstuk verplaatst wordt naar een plek waar al een speelstuk staat dan geldt de zet als een attack (`type: 'attack'`). Je hebt dan een aantal extra properties in de move zitten die informatie geven over wie van wie wint:
+
+      **attacker**: Het type van het speelstuk dat aanvalt
+
+      **defender**: Het type van het speelstuk dat aangevallen wordt
+
+      **attacker_destroyed**: Een boolean die aangeeft als de verdediger de aanvaller verslagen heeft
+
+      **defender_destroyed**: Een boolean die aangeeft als de aanvaller de verdediger verslagen heeft
+
+      Merk op dat *attacker_destroyed* en *defender_destroyed* tegelijkertijd true kunnen zijn als twee speelstukken van hetzelfde type zijn. In dit geval verslaan ze elkaar en worden ze allebei van het bord verwijderd.
+
 
       ## AI
       De zetten die de AI doet zijn allemaal willekeurig. Het is dus vrij makkelijk om van de AI te winnen.
@@ -299,14 +290,14 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-  /games/{id}/actions:
+  /games/{id}/moves:
     get:
       description: |
-        Krijg een lijst van alle actions sinds het spel is begonnen, van zowel jezelf als van de tegenstander. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat.
+        Krijg een lijst van alle moves sinds het spel is begonnen, van zowel jezelf als van de tegenstander. Dit is handig als je animaties wil toevoegen of als je wil bijhouden welk speelstuk van de tegenstander waar staat.
 
-        Let op dat een action niet alleen een verplaatsing van een speelstuk hoeft te zijn. Lees het hoofdstuk 'Move' voor meer informatie hierover.
+        Let op dat een move ook een aanval van een speelstuk kan zijn. Lees het hoofdstuk 'Move' in de documentatie hierover.
 
-        De actions zijn gesorteerd van minst recent (eerste zet) naar meest recent (laatste zet). Deze API heb je alleen nodig als je voor de extra's gaat.
+        De moves zijn gesorteerd van minst recent (eerste zet) naar meest recent (laatste zet). Deze API heb je alleen nodig als je voor de extra's gaat.
       parameters:
         - name: id
           in: path
@@ -319,11 +310,11 @@ paths:
         - api: []
       responses:
         200:
-          description: Een lijst van alle acties
+          description: Een lijst van alle zetten
           schema:
             type: array
             items:
-              $ref: "#/definitions/Action"
+              $ref: "#/definitions/Move"
         default:
           description: Fout
           schema:
@@ -354,21 +345,19 @@ paths:
       responses:
         200:
           description: |
-            De verschuiving is uitgevoerd. In de output zie je de nieuwe state van de Game en alle acties die zijn uitgevoerd naar aanleiding van de verschuiving.
+            De zet is uitgevoerd. In de output zie je de nieuwe state van de Game en alle moves die zijn uitgevoerd naar aanleiding van de zet.
 
-            Bij een normale verschuiving is dit alleen de actie 'move_piece'. Als er een stuk geslagen wordt zijn dit opeenvolgend de acties:
+            Bij een normale verschuiving is dit van het type `'move'`. Als er een stuk geslagen wordt is dit van het type `'attack'`. Lees de documentatie boven voor meer informatie over move objecten.
 
-            - reveal_piece
-            - remove_piece
-            - move_piece
+            Als je tegen de AI speelt krijg je ook meteen de zet van de AI terug.
           schema:
             properties:
               game:
                 $ref: "#/definitions/Game"
-              actions:
+              moves:
                 type: array
                 items:
-                  $ref: "#/definitions/Action"
+                  $ref: "#/definitions/Move"
         default:
           description: Fout
           schema:
@@ -458,29 +447,41 @@ definitions:
       maxItems: 10
       items:
         $ref: "#/definitions/Piece"
-  Action:
+  Move:
     type: object
-    description: Informatie over iets wat in het spel is gebeurd
+    description: Informatie over een zet
     example:
-      type: reveal
-      piece: "4"
+      type: attack
       square:
         row: 3
         column: 6
+      square_to:
+        row: 2
+        column: 6
+      attacker: "4"
+      defender: "2"
+      attacker_destroyed: true
+      defender_destroyed: false
+
     properties:
       type:
         type: string
-        description: Het soort actie
+        description: Het soort zet
         enum:
-          - reveal_piece
-          - remove_piece
-          - move_piece
-      piece:
-        $ref: "#/definitions/Piece"
+          - move
+          - attack
       square:
         $ref: "#/definitions/Square"
       square_to:
         $ref: "#/definitions/Square"
+      attacker:
+        $ref: "#/definitions/Piece"
+      defender:
+        $ref: "#/definitions/Piece"
+      attacker_destroyed:
+        type: boolean
+      defender_destroyed:
+        type: boolean
 
   Square:
     type: object
