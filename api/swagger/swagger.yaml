@@ -199,6 +199,7 @@ paths:
           in: body
           description: Geeft aan of je een game wil tegen de computer of tegen iemand anders
           schema:
+            type: object
             required:
             - ai
             properties:
