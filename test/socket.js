@@ -79,5 +79,5 @@ describe('socket.io', function() {
             client.disconnect();
             done();
         });
-    })
+    });
 });

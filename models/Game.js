@@ -516,7 +516,7 @@ gameSchema.methods.addMove = function(move) {
 
     const socket = require('../socket');
     socket.sendMove(this, move);
-}
+};
 
 /**
  *
