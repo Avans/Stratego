@@ -502,7 +502,7 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     // If the flag is captured the game is over
     if(pieceTypeAtTarget === PieceType.TYPES.FLAG) {
         this.winner = (playerNumber === 1) ? this.player1 : this.player2;
-        this.state = gameSchema.statics.STATE.GAME_OVER;
+        this.setState(gameSchema.statics.STATE.GAME_OVER);
     }
 
     // Save move to history
