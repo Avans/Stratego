@@ -43,7 +43,13 @@ module.exports = {
         io.to(game.player1).emit('move', data);
 
         if(game.player2) {
-            io.to(game.player2).emit('move', data);
+            // Give rotated perspective
+            const rotatedData = JSON.parse(JSON.stringify(data));
+            rotatedData.move.square.row = 9 - data.move.square.row;
+            rotatedData.move.square.column = 9 - data.move.square.column;
+            rotatedData.move.square_to.row = 9 - data.move.square_to.row;
+            rotatedData.move.square_to.column = 9 - data.move.square_to.column;
+            io.to(game.player2).emit('move', rotatedData);
         }
     }
 }

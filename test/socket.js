@@ -80,4 +80,33 @@ describe('socket.io', function() {
             done();
         });
     });
+
+    it('should send rotated actions for player 2', function(done) {
+        game.player1 = 'someone_else';
+        game.player2 = test_user._id;
+
+        const client = io.connect(socketURL, query);
+        const move = {
+            type: 'move',
+            square: {row: 0, column: 0},
+            square_to: {row: 0, column: 1}
+        };
+
+        client.on('connect', function() {
+            game.addMove(move);
+        });
+
+        client.on('move', function(theMove) {
+            expect(theMove).to.deep.eql({
+                game_id: game._id,
+                move: {
+                    type: 'move',
+                    square: {row: 9, column: 9},
+                    square_to: {row: 9, column: 8}
+                }
+            });
+            client.disconnect();
+            done();
+        });
+    });
 });
