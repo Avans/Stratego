@@ -476,12 +476,14 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         if(pieceTypeMoving.canBeat(pieceTypeAtTarget, true)) {
             move.defender_destroyed = true;
             this.board[to_y][to_x] = ' ';
+            this.markModified('board');
         }
 
         // Destroy moving piece if it loses (or draws)
         if(pieceTypeAtTarget.canBeat(pieceTypeMoving, false)) {
             move.attacker_destroyed = true;
             this.board[from_y][from_x] = ' ';
+            this.markModified('board');
             doMove = false;
         }
     }
@@ -504,10 +506,17 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     }
 
     // Save move to history
-    this.moves.push(move);
+    this.addMove(move);
 
     return move;
 };
+
+gameSchema.methods.addMove = function(move) {
+    this.moves.push(move);
+
+    const socket = require('../socket');
+    socket.sendMove(this, move);
+}
 
 /**
  *

@@ -34,7 +34,11 @@ module.exports = {
         }
     },
 
-    sendAction: function(game, action) {
+    sendMove: function(game, move) {
+        io.to(game.player1).emit('move', move);
 
+        if(game.player2) {
+            io.to(game.player2).emit('move', move);
+        }
     }
 }

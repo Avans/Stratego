@@ -1,3 +1,4 @@
+require('../app');
 const expect = require('chai').expect;
 const io = require('socket.io-client');
 
@@ -61,9 +62,22 @@ describe('socket.io', function() {
         });
     });
 
-    // should not receive messages for other games
+    it('should send new actions', function(done) {
+        const client = io.connect(socketURL, query);
+        const move = {
+            type: 'move',
+            square: {row: 0, column: 0},
+            square_to: {row: 0, column: 1}
+        };
 
-    // Should receive moves
+        client.on('connect', function() {
+            game.addMove(move);
+        });
 
-
+        client.on('move', function(theMove) {
+            expect(move).to.deep.eql(theMove);
+            client.disconnect();
+            done();
+        });
+    })
 });
