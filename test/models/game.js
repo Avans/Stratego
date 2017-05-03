@@ -337,15 +337,14 @@ describe('Game.doMove()', function() {
     });
 
     it('should execute a valid player 1 move', async function() {
-        const actions = game.doMove('test_user', 0, 0, 0, 1);
+        const action = game.doMove('test_user', 0, 0, 0, 1);
 
         // Expect correct actions returned
-        actions.length.should.equal(1);
-        expect(actions).to.deep.equal([{
-            type: 'move_piece',
+        expect(action).to.deep.equal({
+            type: 'move',
             square: { column: 0, row: 0 },
             square_to: { column: 0, row: 1 }
-        }]);
+        });
 
         // Expect actions to be added to history
         game.actions.length.should.equal(1);
@@ -371,53 +370,41 @@ describe('Game.doMove()', function() {
 
     // should execute an attack
     it('should execute an attack', async function() {
-        const actions = game.doMove('test_user', 0, 0, 1, 0); // Attack the 2:6 piece and win
+        const action = game.doMove('test_user', 0, 0, 1, 0); // Attack the 2:6 piece and win
 
         game.board[0][0].should.equal(' ');
         game.board[0][1].should.equal('1:4');
 
-        expect(actions).to.deep.equal([
-            {   type: 'reveal_piece',
+        expect(action).to.deep.equal(
+            {   type: 'attack',
                 square: {row: 0, column: 0},
-                piece: '4'
-            },
-            {   type: 'reveal_piece',
-                square: {row: 0, column: 1},
-                piece: '6'
-            },
-            {   type: 'destroy_piece',
-                square: {row: 0, column: 1}
-            },
-            {   type: 'move_piece',
-                square: {row: 0, column: 0},
-                square_to: {row: 0, column: 1}
+                square_to: {row: 0, column: 1},
+                attacker: '4',
+                defender: '6',
+                attacker_destroyed: false,
+                defender_destroyed: true
             }
-        ]);
+        );
     });
 
     it('should destroy both pieces if they are equal', async function() {
         game.board[0][0] = '1:6';
-        const actions = game.doMove('test_user', 0, 0, 1, 0);
+        const action = game.doMove('test_user', 0, 0, 1, 0);
 
         game.board[0][0].should.equal(' ');
         game.board[0][1].should.equal(' ');
 
 
-        expect(actions).to.deep.equal([
-            {   type: 'reveal_piece',
-                square: { column: 0, row: 0 },
-                piece: '6'
-            },
-            {   type: 'reveal_piece',
-                square: { column: 1, row: 0 },
-                piece: '6'
-            },
-            {   type: 'destroy_piece',
-                square: { column: 1, row: 0 }
-            },
-            {   type: 'destroy_piece',
-                square: { column: 0, row: 0 }
-            }]);
+        expect(action).to.deep.equal(
+            {   type: 'attack',
+                square: {row: 0, column: 0},
+                square_to: {row: 0, column: 1},
+                attacker: '6',
+                defender: '6',
+                attacker_destroyed: true,
+                defender_destroyed: true
+            }
+        );
     });
 
     it('should destroy the moving piece if it loses', async function() {

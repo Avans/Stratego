@@ -308,14 +308,18 @@ describe('GET /api/games/:id/actions', function() {
         game = new Game();
         game.player1 = test_user._id;
         game.actions = [{
-            type: 'move_piece',
+            type: 'move',
             square: {row: 0, column: 0},
             square_to: {row: 1, column: 0}
         },
         {
-            type: 'reveal_piece',
+            type: 'attack',
             square: {row: 0, column: 0},
-            piece: 'B'
+            square_to: {row: 1, column: 0},
+            attacker: '1',
+            defender: '4',
+            attacker_destroyed: false,
+            defender_destroyed: true
         }];
         game = await game.save();
     });
@@ -326,14 +330,18 @@ describe('GET /api/games/:id/actions', function() {
             .expect(200);
 
         expect(res.body).to.deep.equal([{
-            type: 'move_piece',
+            type: 'move',
             square: {row: 0, column: 0},
             square_to: {row: 1, column: 0}
         },
         {
-            type: 'reveal_piece',
+            type: 'attack',
             square: {row: 0, column: 0},
-            piece: 'B'
+            square_to: {row: 1, column: 0},
+            attacker: '1',
+            defender: '4',
+            attacker_destroyed: false,
+            defender_destroyed: true
         }]);
     });
 
@@ -347,14 +355,18 @@ describe('GET /api/games/:id/actions', function() {
             .expect(200);
 
         expect(res.body).to.deep.equal([{
-            type: 'move_piece',
+            type: 'move',
             square: {row: 9, column: 9},
             square_to: {row: 8, column: 9}
         },
         {
-            type: 'reveal_piece',
+            type: 'attack',
             square: {row: 9, column: 9},
-            piece: 'B'
+            square_to: {row: 8, column: 9},
+            attacker: '1',
+            defender: '4',
+            attacker_destroyed: false,
+            defender_destroyed: true
         }]);
     });
 });
@@ -439,7 +451,7 @@ describe('POST /api/games/:id/actions', function() {
         // Expect the executed actions to be returned
         expect(res.body.actions).to.deep.equal([
             {
-                type: 'move_piece',
+                type: 'move',
                 square: {column: 0, row: 0},
                 square_to: {column: 0, row: 1}
             }
@@ -471,7 +483,7 @@ describe('POST /api/games/:id/actions', function() {
         // Expect the actions to be from player2's perspective
         expect(res.body.actions).to.deep.equal([
             {
-                type: 'move_piece',
+                type: 'move',
                 square: {row: 9, column: 7},
                 square_to: {row: 8, column: 7}
             }

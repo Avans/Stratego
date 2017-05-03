@@ -49,10 +49,13 @@ var gameSchema = new mongoose.Schema({
     },
     actions: {type: [
         {
-            type: {type: String, required: true, enum: ['reveal_piece', 'destroy_piece', 'move_piece']},
+            type: {type: String, required: true, enum: ['move', 'attack']},
             square: {type: coordinateType, required: true},
-            square_to: {type: coordinateType},
-            piece: {type: String}
+            square_to: {type: coordinateType, required: true},
+            attacker: {type: String},
+            defender: {type: String},
+            attacker_destroyed: {type: Boolean},
+            defender_destroyed: {type: Boolean}
         }
     ]}
 });
@@ -449,7 +452,11 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         throw new ValidationError(util.format('The piece at %j cannot be moved by %s, it is controlled by the other user', from, user));
     }
 
-    const actions = [];
+    const action = {
+        type: 'move',
+        square: from,
+        square_to: to
+    };
 
     let move = true;
 
@@ -458,33 +465,22 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
     const pieceTypeAtTarget = this.getPieceType(to_x, to_y);
     if(pieceTypeAtTarget !== null) {
 
-        // Reveal the pieces
-        actions.push({
-            type: 'reveal_piece',
-            square: from,
-            piece: pieceTypeMoving.code
-        });
-        actions.push({
-            type: 'reveal_piece',
-            square: to,
-            piece: pieceTypeAtTarget.code
-        });
+        // Upgrade action to attack
+        action.type = 'attack';
+        action.attacker = pieceTypeMoving.code;
+        action.defender = pieceTypeAtTarget.code;
+        action.defender_destroyed = false;
+        action.attacker_destroyed = false;
 
         // Destroy target piece
         if(pieceTypeMoving.canBeat(pieceTypeAtTarget, true)) {
-            actions.push({
-                type: 'destroy_piece',
-                square: to
-            });
+            action.defender_destroyed = true;
             this.board[to_y][to_x] = ' ';
         }
 
         // Destroy moving piece if it loses (or draws)
         if(pieceTypeAtTarget.canBeat(pieceTypeMoving, false)) {
-            actions.push({
-                type: 'destroy_piece',
-                square: from
-            });
+            action.attacker_destroyed = true;
             this.board[from_y][from_x] = ' ';
             move = false;
         }
@@ -495,12 +491,6 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         this.board[to_y][to_x] = this.board[from_y][from_x];
         this.board[from_y][from_x] = ' ';
         this.markModified('board');
-
-        actions.push({
-            type: 'move_piece',
-            square: from,
-            square_to: to
-        });
     }
 
     // Change the turn
@@ -513,12 +503,10 @@ gameSchema.methods.doMove = function(user, from_x, from_y, to_x, to_y) {
         this.state = gameSchema.statics.STATE.GAME_OVER;
     }
 
-    // Save actions to history
-    for(let i = 0; i < actions.length; i += 1) {
-        this.actions.push(actions[i]);
-    }
+    // Save action to history
+    this.actions.push(action);
 
-    return actions;
+    return action;
 };
 
 /**
@@ -618,11 +606,8 @@ gameSchema.methods.outputActionsForUser = function(user, actions_original) {
         for(let i = 0; i < actions.length; i++) {
             actions[i].square.row = 9 - actions[i].square.row;
             actions[i].square.column = 9 - actions[i].square.column;
-
-            if(actions[i].hasOwnProperty('square_to')) {
-                actions[i].square_to.row = 9 - actions[i].square_to.row;
-                actions[i].square_to.column = 9 - actions[i].square_to.column;
-            }
+            actions[i].square_to.row = 9 - actions[i].square_to.row;
+            actions[i].square_to.column = 9 - actions[i].square_to.column;
         }
     }
 
