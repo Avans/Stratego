@@ -154,6 +154,67 @@ info:
       ![](static/ai_start_board.png)
 
 
+      ## Websockets
+      Als er events gebeuren met een game waar je aan mee doet kan je deze opvangen met een websocket verbinding. Dit is puur een extra, het is ook mogelijk om alle informatie te krijgen door regelmatig naar de API te pollen.
+
+      Hier is een klein voorbeeldje van hoe je websockets kan toevoegen aan je applicatie:
+
+      ```js
+      <script src="https://strategoavans.herokuapp.com/static/socket.io.min.js"></script>
+      <script>
+
+      var api_key = 'VUL HIER JE API KEY IN';
+
+      var socket = io.connect('https://strategoavans.herokuapp.com/', {query: 'api_key=' + api_key});
+
+      socket.on('connect', function() {
+          console.log('Connected')
+      })
+
+      socket.on('statechange', function(game) {
+          console.log('Game changed:', game);
+      });
+
+      socket.on('move', function(move) {
+          console.log('Move:', move);
+      })
+
+      socket.on('error', function(error) {
+          console.error(error);
+      });
+      </script>
+      ```
+      Je krijgt events voor alle games waar je aan mee doet. De statechange gebeurt voor elke keer als de game van state veranderd (ook als je een zet tegen de ai doet). Je krijgt dan het hele game object als parameter mee.
+
+      De move gebeurd voor elke verplaatsing en aanval die in spellen gebeuren waar je aan mee doet.
+
+      Met events krijg je realtime informatie over dingen die de tegenstander doet, maar ook alles wat je zelf doet.
+
+      ## jQuery voorbeeld
+      ```
+      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+      <script>
+      var api_key = 'VUL HIER JE API KEY IN';
+
+      // Haal games op
+      $.ajax({
+          url: 'https://strategoavans.herokuapp.com/api/games?api_key=' + api_key
+      }).done(function(games) {
+          console.log('Games:', games);
+      });
+
+      // Maak een nieuwe game tegen de AI
+      $.ajax({
+          url: 'https://strategoavans.herokuapp.com/api/games?api_key=' + api_key,
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ai: true})
+      }).done(function(game) {
+          console.log('New game:', game);
+      });
+      </script>
+      ```
 
       # Klik op 'Expand Operations' hieronder om de API te zien.
 
