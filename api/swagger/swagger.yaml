@@ -159,9 +159,9 @@ info:
 
       Hier is een klein voorbeeldje van hoe je websockets kan toevoegen aan je applicatie:
 
-      ```js
-      <script src="https://strategoavans.herokuapp.com/static/socket.io.min.js"></script>
-      <script>
+      ```json
+      script src="https://strategoavans.herokuapp.com/static/socket.io.min.js"/script
+      script
 
       var api_key = 'VUL HIER JE API KEY IN';
 
@@ -182,8 +182,9 @@ info:
       socket.on('error', function(error) {
           console.error(error);
       });
-      </script>
+      /script
       ```
+      
       Je krijgt events voor alle games waar je aan mee doet. De statechange gebeurt voor elke keer als de game van state veranderd (ook als je een zet tegen de ai doet). Je krijgt dan het hele game object als parameter mee.
 
       De move gebeurd voor elke verplaatsing en aanval die in spellen gebeuren waar je aan mee doet.
@@ -192,9 +193,9 @@ info:
 
       ## jQuery voorbeeld
       ```
-      <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      script src="https://code.jquery.com/jquery-3.2.1.min.js" /script
 
-      <script>
+      script
       var api_key = 'VUL HIER JE API KEY IN';
 
       // Haal games op
@@ -213,7 +214,7 @@ info:
       }).done(function(game) {
           console.log('New game:', game);
       });
-      </script>
+      /script
       ```
 
       ## Source
