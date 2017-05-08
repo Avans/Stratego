@@ -9,7 +9,8 @@
 
 Je kan deze server ook lokaal runnen.
 
-* Installeer [Node.js](https://nodejs.org/)
+* Installeer [Node.js](https://nodejs.org/) en [MongoDB](https://www.mongodb.com/)
+* Zorg ervoor dat MongoDB [draait](http://stackoverflow.com/questions/20796714/how-do-i-start-mongo-db-from-windows)
 * Download de [broncode](https://github.com/Avans/Stratego/archive/master.zip)
 * Ga met een command-line naar de directory van de broncode
 * Run `npm install`
