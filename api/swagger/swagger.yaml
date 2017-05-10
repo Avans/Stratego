@@ -125,7 +125,7 @@ info:
 
       Er zijn twee soorten moves, te herkennen aan de property `'type'`: `'move'` en `'attack'`.
 
-      Een move heeft altijd de property `'square'` en `'square_to'`. Dit is waar
+      Een move heeft altijd de property `'square'` en `'square_to'`. Dit is waar het speelstuk stond en waar het heen wil bewegen.
 
       ### Move
 
@@ -157,7 +157,7 @@ info:
       ## Websockets
       Als er events gebeuren met een game waar je aan mee doet kan je deze opvangen met een websocket verbinding. Dit is puur een extra, het is ook mogelijk om alle informatie te krijgen door regelmatig naar de API te pollen.
 
-      Hieronder is een klein voorbeeldje van hoe je websockets kan toevoegen aan je applicatie. Door een technische beperking moet je de groter en kleiner dan tekentjes er zelf bij bedenken.
+      Hieronder is een klein voorbeeldje van hoe je websockets kan toevoegen aan je applicatie. Door een technische beperking moet je de groter en kleiner dan tekentjes van de script tag er zelf bij bedenken.
 
       ```js
       script src="https://strategoavans.herokuapp.com/static/socket.io.min.js"/script
