@@ -29,12 +29,12 @@ var gameSchema = new mongoose.Schema({
     player1_set_up_pieces: {type: Boolean, required: true, default: false},
     player2_set_up_pieces: {type: Boolean, required: true, default: false},
     start_board: {
-        type: [[String]],
+        type: mongoose.Schema.Types.Mixed,
         validate: [validateBoard, '{PATH} is not a valid board'],
         default: undefined
     },
     board: {
-        type: [[String]],
+        type: mongoose.Schema.Types.Mixed,
         validate: [validateBoard, '{PATH} is not a valid board'],
         default: [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
                   [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
