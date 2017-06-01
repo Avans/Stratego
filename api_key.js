@@ -68,7 +68,7 @@ module.exports = {
         <input type="text" value="`+req.user.api_key+`" style="font-size: 2em; padding: 1.2em; width: 80%; font-family: monospace; text-align: center;">
         <br><br>
         Gebruik deze in de URL van de API, bijvoorbeeld:<br>
-        <a href="/api/games?api_key=`+req.user.api_key+`">https://strategoavans.heroku.com/api/games?api_key=`+req.user.api_key+`</a>
+        <a href="/api/games?api_key=`+req.user.api_key+`">https://strategoavans.herokuapp.com/api/games?api_key=`+req.user.api_key+`</a>
       </body>
     </html>`);
         });
