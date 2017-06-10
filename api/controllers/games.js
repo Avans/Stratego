@@ -45,24 +45,22 @@ async function postGames(req, res) {
             game.setState(Game.STATE.WAITING_FOR_PIECES);
             game = await game.save();
         } else {
+            // Check that the game is not a duplicate pending game
+            const user_already_has_waiting_game = (await Game.count({
+                player1: req.user._id,
+                state: Game.STATE.WAITING_FOR_AN_OPPONENT
+            }) >= 1);
+
+            if(user_already_has_waiting_game) {
+                res.status(400).json({message: 'You already have a game that is waiting for an opponent'});
+                return;
+            }
+            
             // Otherwise create a new game
             game = new Game();
             game.player1 = req.user._id;
             game.setState(Game.STATE.WAITING_FOR_AN_OPPONENT);
             game = await game.save();
-
-            // Check that the game is not a duplicate pending game
-            const user_already_has_waiting_game = (await Game.count({
-                player1: req.user._id,
-                state: Game.STATE.WAITING_FOR_AN_OPPONENT
-            }) >= 2);
-
-            if(user_already_has_waiting_game) {
-                await game.remove();
-
-                res.status(400).json({message: 'You already have a game that is waiting for an opponent'});
-                return;
-            }
         }
 
     }
