@@ -63,7 +63,7 @@ async function getMoves(req, res) {
 }
 
 /**
- * Post a start board
+ * Post a move
  */
 async function postMoves(req, res) {
     let game = await Game.findByIdAndUser(req.params.id, req.user);
