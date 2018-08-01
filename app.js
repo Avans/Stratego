@@ -12,6 +12,7 @@ var app = express();
 
 // Data Access Layer
 var mongoose = require('mongoose');
+mongoose.plugin(schema => { schema.options.usePushEach = true });
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.DB_CONNECTION || 'mongodb://localhost:27017/stratego');
 require('./models/Game');
